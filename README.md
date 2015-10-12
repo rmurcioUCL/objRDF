@@ -6,6 +6,6 @@ Several issues with this file in this version
    + Dicctionaries!!!
    + Order or the triplets
    + Review fields
-   + verbose address . Are we doing them for London?
+   + verbose address . Are we doing it for London?
    + BNode ()  -  think if is the correct way to do it
    + We need a way to figure out the init format of the file
