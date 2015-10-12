@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import filedialog
 import csv
 import hashlib
+import uuid 
 
 from rdflib import URIRef, BNode, Literal, Namespace, plugin, Graph, ConjunctiveGraph
 from rdflib.store import Store
@@ -97,10 +98,7 @@ def createRDF(row,g,outputfile,nspaces):
 
     objectID  = row[1]
     idencode=row[2].encode('utf-8')
-    uid=hashlib.new('sha1')
-    uid.update(idencode)
-    #print(uid.hexdigest())
-    uid=uid.hexdigest()
+    print uuid.uuid5(naptan, idencode)
     # stopLon,stopLat=ConvertProj(row[4],row[5])
     objectLon,objectLat=row[4],row[5]        
     singleGeometry=createGeometry(uid)
