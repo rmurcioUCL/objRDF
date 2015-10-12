@@ -6,4 +6,5 @@ Several issues with this file in this version
    + Review fields
    + verbose address . Are we doing them for London?
    + BNode ()  -  think if is the correct way to do it
+   + Transform to OOcode
    + We need a way to figure out the init format of the file
