@@ -49,14 +49,8 @@ def bindingPrefixes(graphs,prefixes):
     
 def createRDF(row):
       
-    objectID  = row[1]
-    idencode=row[2].encode('utf-8')
-    uid=hashlib.new('sha1')
-    uid.update(idencode)
-    #print(uid.hexdigest())
-    uid=uid.hexdigest()
-    #naptan = Namespace("http://transport.data.gov.uk/def/naptan/")
-    #print (uuid.uuid5(naptan, idencode))
+    idencode=row[0].encode('utf-8')
+    print (uuid.uuid5(naptan, idencode))
     # stopLon,stopLat=ConvertProj(row[4],row[5])
     stopLat,stopLong=row[4],row[5]   
     noAddress=""
