@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import csv
+from collections import defaultdict
 import hashlib
 import uuid 
 from rdflib import URIRef, BNode, Literal, Namespace, plugin, Graph, ConjunctiveGraph
@@ -17,6 +18,24 @@ def readCsv(inputfile):
          print ("I/O error({0}): {1}".format(e.errno, e.strerror))
          raise
 
+
+def WriteDict(prefixes):
+    with open('dictionary.csv','wb') as f:
+        w = csv.writer(f)
+        w.writerow(prefixes.keys())
+        w.writerow(prefixes.values())
+    f.close()
+
+def ReadDict():
+    dict = defaultdict(list)
+    with open('dictionary.csv','rb') as f:
+        r = csv.DictReader(f)
+        for row in r:
+            for (k,v) in row.items():
+                dict[k].append(v)
+    f.close()
+    return dict
+    
 
 def definePrefixes():
 
