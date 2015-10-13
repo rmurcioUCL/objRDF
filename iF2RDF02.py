@@ -32,7 +32,7 @@ def ReadDict():
         r = csv.DictReader(f)
         for row in r:
             for (k,v) in row.items():
-                dict[k].append(v)
+                dict[k]=v
     f.close()
     return dict
     
