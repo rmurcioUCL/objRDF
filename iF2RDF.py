@@ -96,8 +96,7 @@ def createRDF(row,g,outputfile,nspaces):
     #owl = Namespace(nspaces.get(schema))
     #foaf = Namespace(nspaces.get(schema))    
 
-    objectID  = row[1]
-    idencode=row[2].encode('utf-8')
+    idencode=row[1].encode('utf-8')
     print uuid.uuid5(naptan, idencode)
     # stopLon,stopLat=ConvertProj(row[4],row[5])
     objectLon,objectLat=row[4],row[5]        
