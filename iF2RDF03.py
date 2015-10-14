@@ -4,7 +4,7 @@
 #from tkinter import filedialog
 import csv
 import hashlib
-#import uuid 
+import uuid 
 from rdflib import URIRef, Literal, Namespace, plugin, Graph, ConjunctiveGraph
 from rdflib.store import Store
 
@@ -62,7 +62,9 @@ def createRDF(row):
       
     naptan = Namespace("http://transport.data.gov.uk/def/naptan/")
     objectID  = row[1]
-    uid=getUid(row[0]+naptan)
+    #uid=getUid(row[0]+naptan)
+    idencode=row[0].encode('utf-8')
+    uid=uuid.uuid5(naptan, idencode)
     # stopLon,stopLat=ConvertProj(row[4],row[5])
     stopLat,stopLong=row[4],row[5]   
     noAddress=""
