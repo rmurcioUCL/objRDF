@@ -1,5 +1,5 @@
 # objRDF
-Transform an input (text-based) file into a particular RDF format
+Transform an input (text-based) file into a ttl-sytle RDF format
  
    + Dicctionaries   -  J
    + Review fields - RM
