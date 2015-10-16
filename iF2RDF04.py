@@ -206,10 +206,10 @@ def main():
    # root = tk.Tk()
     #root.withdraw()
     #inFile = filedialog.askopenfilename()
-    print('Init')
     inFile = "/Users/patrick/3cixty/IN/RM/bus-stops-10-06-15.csv"
+    #inFile = "C:\\WinPython-64bit-3.4.3.4\\transport\\data\\small.csv"
+  #  print (inFile)
     outFile="/Users/patrick/3cixty/tables/bus.ttl"
-    print('Getting input file...')
     csv=readCsv(inFile)
     next(csv, None)  #FILE WITH HEADERS
 
@@ -220,10 +220,11 @@ def main():
     print('Binding Prefixes')
     bindingPrefixes(graph,prefixes)
     print('Creating graph...')
+
     for row in csv:
-        lstData = createRDF(row,g)
-        #createGraph(lstData,g)
-    createRDF(lstData,g).serialize(outFile,format='turtle')
+        lstData = createRDF(row)
+        createGraph(lstData,g)
+    createGraph(lstData,g).serialize(outFile,format='turtle')
     nzip = time.strftime("%Y-%m-%d")+'.zip'
     zf = zipfile.ZipFile(nzip, mode='w')
     try:
