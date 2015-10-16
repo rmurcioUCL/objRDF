@@ -206,10 +206,9 @@ def main():
    # root = tk.Tk()
     #root.withdraw()
     #inFile = filedialog.askopenfilename()
-    inFile = "/Users/patrick/3cixty/IN/RM/bus-stops-10-06-15.csv"
-    #inFile = "C:\\WinPython-64bit-3.4.3.4\\transport\\data\\small.csv"
-  #  print (inFile)
-    outFile="/Users/patrick/3cixty/tables/bus.ttl"
+    pathf="/Users/patrick/3cixty/IN/RM/"
+    inFile = pathf+"bus-stops-10-06-15.csv"
+    outFile=pathf+"bus.ttl"
     csv=readCsv(inFile)
     next(csv, None)  #FILE WITH HEADERS
 
@@ -225,14 +224,11 @@ def main():
         lstData = createRDF(row)
         createGraph(lstData,g)
     createGraph(lstData,g).serialize(outFile,format='turtle')
-    nzip = time.strftime("%Y-%m-%d")+'.zip'
+    nzip = pathf+time.strftime("%Y-%m-%d")+'.zip'
     zf = zipfile.ZipFile(nzip, mode='w')
     try:
         print ('Creating zip file...')
-        zf.write('/Users/patrick/3cixty/tables/bus.ttl')
+        zf.write(outFile)
     finally:
-        print ('DONE!')
         zf.close()
-
-if __name__ == "__main__":
-    main();
+        print ('DONE!')
