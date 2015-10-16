@@ -59,28 +59,9 @@ def bindingPrefixes(graphs,prefixes):
         graphs.bind(key, prefixes[key])
     return graphs
 
-def createRDF(row,g):
+def createRDF(row):
 
-    schema = Namespace("http://schema.org/")
-    naptan = Namespace("http://transport.data.gov.uk/def/naptan/london")
-  #  owl = Namespace("http://www.w3.org/2002/07/owl#")
-    xsd = Namespace("http://www.w3.org/2001/XMLSchema#")
-    rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
-   # vcard = Namespace("http://www.w3.org/2006/vcard/ns#")
-    locationOnt = Namespace("http://data.linkedevents.org/def/location#")
-    geom = Namespace("http://geovocab.org/geometry#")
-    #unknown = Namespace("http://data.linkedevents.org/def/unknown#")
-    geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
-    geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
-    rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-    transit = Namespace("http://vocab.org/transit/terms/")
-    dcterms = Namespace("http://purl.org/dc/terms/")
-    dul = Namespace("http://ontologydesignpatterns.org/ont/dul/DUL.owl#")
-    locn = Namespace("http://www.w3.org/ns/locn#")
-    #foaf = Namespace("http://xmlns.com/foaf/0.1/")
-    dc = Namespace("http://purl.org/dc/elements/1.1/")
-    
-    #trans = Namespace("http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#")
+    naptan = Namespace("http://transport.data.gov.uk/def/naptan/")
     objectID  = row[1]
     #uid=getUid(row[0],naptan)
     idencode=row[0].encode('utf-8')
@@ -101,38 +82,10 @@ def createRDF(row,g):
     stopPublisher = URIRef('https://tfl.gov.uk/modes/buses/')
     stopBusinessType = URIRef('http://data.linkedevents.org/kos/3cixty/busstop')
     stopLabel = Literal('Bus Stop - '+str(row[3]))
-    
-    singleStop = createBusStop(stopid)
-    singleAddress = createAddress(stopid, stopGUID)
-    singleGeometry = createGeometry(stopid, stopGUID)
-    g.add((singleStop, rdf.type, naptan.BusStop))
-    g.add((singleStop, rdf.type, dul.Place))
-    g.add((singleStop, rdf.type, transit.Stop))
-    g.add((singleStop, dc.identifier, Literal(stopid)))
-    g.add((singleStop, geom.geometry, singleGeometry))
-    g.add((singleStop, schema.geo, singleGeometry))
-    g.add((singleAddress, rdf.type, schema.PostalAddress))
-    g.add((singleAddress, rdf.type, dcterms.Location))
-    g.add((singleAddress, dcterms.title, stopTitle))
-    g.add((singleAddress, schema.streetAddress, stopAddress))
-    g.add((singleAddress, locn.address, stopLocnAddress))
-    g.add((singleAddress, schema.addressLocality, stopAddressLocality))
-    g.add((singleAddress, locn.adminUnitL12, stopAdminUnitL2))
-    g.add((singleGeometry, rdf.type, geo.Point))
-    g.add((singleGeometry, geo.lat, Literal(stopLat, datatype=xsd.double)))
-    g.add((singleGeometry, geo.long, Literal(stopLong, datatype=xsd.double)))
-    g.add((singleGeometry, locn.geometry, Literal(stopGeometry, datatype=geosparql.wktLiteral)))
-    g.add((singleStop, geo.location, singleGeometry))
-    g.add((singleStop, transit.route, stopRoute))
-    g.add((singleStop, schema.location, singleAddress))
-    g.add((singleStop, locn.address, singleAddress))
-    g.add((singleStop, dc.publisher, stopPublisher))
-    g.add((singleStop, locationOnt.businessType, stopBusinessType))
-    g.add((singleStop, rdfs.label, stopLabel))
-    
-    #lst = [stopid, stopLat, stopLong, stopGeometry, stopRoute, stopGUID, stopTitle, stopAddress, stopLocnAddress,\
-     #      stopAddressLocality, stopAdminUnitL2, stopPublisher, stopBusinessType, stopLabel]
-    return g
+
+    lst = [stopid, stopLat, stopLong, stopGeometry, stopRoute, stopGUID, stopTitle, stopAddress, stopLocnAddress,\
+           stopAddressLocality, stopAdminUnitL2, stopPublisher, stopBusinessType, stopLabel]
+    return lst
 
 #this creates a url of a single bus stop with the test id
 def createBusStop(stopId):
