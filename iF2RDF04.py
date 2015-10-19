@@ -44,6 +44,8 @@ def definePrefixes():
         'unknown': 'http://data.linkedevents.org/def/unknown#',
         'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
         'geosparql': 'http://www.opengis.net/ont/geosparql#',
+        'sf' :'http://www.opengis.net/ont/sf#',
+        'dct' : 'http://purl.org/dc/terms/',
         'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
         'transit': 'http://vocab.org/transit/terms/',
         'dcterms': 'http://purl.org/dc/terms/',
@@ -101,6 +103,32 @@ def createGeometry(stopId, stopsGUID):
 def createAddress(stopId, stopsGUID):
     singleAddress = URIRef(('http://data.linkedevents.org/location/%s/address') % stopsGUID)
     return singleAddress
+    
+#-------- Buslines    
+#create line URL
+def createLine(busId):
+    lineId = URIRef('http://data.linkedevents.org/transit/London/busLine/' + busId)
+    return lineId
+
+#create line geometry url
+def createGeometryURL(busId):
+    geometryURL = URIRef('http://data.linkedevents.org/transit/Milano/busLine/' + busId + '/geometry')
+    return geometryURL
+
+#create geometry
+def createGeometry(busWkt):
+    routeGeometry = Literal(busWkt)
+    return routeGeometry
+
+#create routeService or serviceId
+def createRouteService(route, run):
+    routeService = URIRef('http://data.linkedevents.org/transit/London/service/' + route + '_' + Literal(run))
+    return routeService
+
+#create route
+def createRoute(route):
+    busRoute = URIRef('http://data.linkedevents.org/transit/Milano/route/' + route)
+    return busRoute
 
 #----------------------------------- Create graph ----------------------------
 #creates graph of one bus stop
@@ -154,6 +182,60 @@ def createGraph(arg,g):
     g.add((singleStop, locationOnt.businessType, arg[12]))
     g.add((singleStop, rdfs.label, arg[13]))
     return g
+    
+#this creates 'store' variable for the final busline conjunctive graph
+busline_store = plugin.get('IOMemory', Store)()
+busline_g= Graph(busline_store)
+busline_graph = ConjunctiveGraph(busline_store)
+
+#Expected input for busline graph
+#busId = UUID()
+#busWkt = "LINESTRING (9.140993697015464 45.531513894876362 9.150993697015464 45.331513894876362)" 
+#busRoute = '256D'
+#busRun = 1
+#busLabel = 'NEW OXFORD STREET - CANADA WATER BUS STATION <> #'
+
+#busline1 = [busId, busWkt, busRoute, busRun, busLabel]
+
+def createBuslineGraph(arg):
+    #schema = Namespace("http://schema.org/")
+    #naptan = Namespace("http://transport.data.gov.uk/def/naptan/")
+    #owl = Namespace("http://www.w3.org/2002/07/owl#")
+    #xsd = Namespace("http://www.w3.org/2001/XMLSchema#")
+    rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
+    #vcard = Namespace("http://www.w3.org/2006/vcard/ns#")
+    #locationOnt = Namespace("http://data.linkedevents.org/def/location#")
+    #geom = Namespace("http://geovocab.org/geometry#")
+    #unknown = Namespace("http://data.linkedevents.org/def/unknown#")
+    geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+    #geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
+    sf = Namespace("http://www.opengis.net/ont/sf#")
+    dct = Namespace("http://purl.org/dc/terms/")
+    rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    transit = Namespace("http://vocab.org/transit/terms/")
+    #dcterms = Namespace("http://purl.org/dc/terms/")
+    #dul = Namespace("http://ontologydesignpatterns.org/ont/dul/DUL.owl#")
+    locn = Namespace("http://www.w3.org/ns/locn#")
+    #foaf = Namespace("http://xmlns.com/foaf/0.1/")
+    #dc = Namespace("http://purl.org/dc/elements/1.1/")
+    #trans = Namespace("http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#")
+
+#creates graph of one bus stop
+def createBuslineGraph(arg):
+    busline_g.add((createLine(arg[0]), rdf.type, transit.BusRoute))
+    busline_g.add((createLine(arg[0]), geo.location, createGeometryURL(arg[0])))
+    busline_g.add((createLine(arg[0]), rdfs.label, Literal(arg[4])))
+    busline_g.add((createLine(arg[0]), transit.routeService, createRouteService(arg[2], arg[3])))
+    busline_g.add((createLine(arg[0]), transit.route, createRoute(arg[2])))
+    busline_g.add((createGeometryURL(arg[0]), rdf.type, sf.LineString))
+    busline_g.add((createGeometryURL(arg[0]), locn.geometry, Literal(busWkt)))
+    return busline_g
+
+#creates graph of stops
+def createBuslineTree(*args):
+    for arg in args:
+        createBuslineGraph(arg)
+    print(createBuslineGraph(arg).serialize(format='turtle'))
 
 def main():
    # root = tk.Tk()
