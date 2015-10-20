@@ -182,7 +182,7 @@ def createGraph(arg,g):
     g.add((singleStop, locationOnt.businessType, arg[12]))
     g.add((singleStop, rdfs.label, arg[13]))
     return g
-    
+#------------- Buslines -----------    
 #this creates 'store' variable for the final busline conjunctive graph
 busline_store = plugin.get('IOMemory', Store)()
 busline_g= Graph(busline_store)
@@ -221,7 +221,6 @@ def createBuslineGraph(arg):
     #trans = Namespace("http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#")
 
 #creates graph of one bus stop
-def createBuslineGraph(arg):
     busline_g.add((createLine(arg[0]), rdf.type, transit.BusRoute))
     busline_g.add((createLine(arg[0]), geo.location, createGeometryURL(arg[0])))
     busline_g.add((createLine(arg[0]), rdfs.label, Literal(arg[4])))
@@ -236,6 +235,64 @@ def createBuslineTree(*args):
     for arg in args:
         createBuslineGraph(arg)
     print(createBuslineGraph(arg).serialize(format='turtle'))
+#----------------------- End of buslines code -------------    
+
+#--------------------- Bus correspondence graph -----------
+#data record as in bus correspondence table
+#[stop code lbsl, bus stop code, naptan atco, route, run, sequence, service]
+#busCorr = ['27472', 74198, '490010288N', '256D', 1, 1, '256D_1']
+
+#create service stop URL
+def createServiceStop(service, stopCode):
+    serviceStopId = URIRef('http://data.linkedevents.org/transit/London/serviceStop/' + service + '/' + Literal(stopCode))
+    return serviceStopId
+
+#create service URL
+def createService(service):
+    serviceURL = URIRef('http://data.linkedevents.org/transit/London/service/' + service)
+    return serviceURL
+
+#create stop URL
+def createStop(stopCode):
+    stopURL = URIRef('http://data.linkedevents.org/transit/London/stop/' + Literal(stopCode))
+    return stopURL
+
+#this creates 'store' variable for the final conjunctive graph
+corr_store = plugin.get('IOMemory', Store)()
+corr_g= Graph(corr_store)
+corr_graph = ConjunctiveGraph(corr_store)
+
+#creates graph of one bus correspondence relationship
+def createBusCorrGraph(arg):
+    geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+    foaf = Namespace("http://xmlns.com/foaf/0.1/")
+    geom = Namespace("http://geovocab.org/geometry#")
+    unknown = Namespace("http://data.linkedevents.org/def/unknown#")
+    transit = Namespace("http://vocab.org/transit/terms/")
+    locn = Namespace("http://www.w3.org/ns/locn#")
+    vcard = Namespace('http://www.w3.org/2006/vcard/ns#')
+    dcterms = Namespace("http://purl.org/dc/terms/")
+    schema = Namespace('http://schema.org/')
+    geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
+    rdfs = Namespace('http://www.w3.org/2000/01/rdf-schema#')
+    naptan = Namespace('http://transport.data.gov.uk/def/naptan/')
+    xsd = Namespace('http://www.w3.org/2001/XMLSchema#')
+    owl = Namespace('http://www.w3.org/2002/07/owl#')
+    rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    locationOnt = Namespace("http://data.linkedevents.org/def/location#")
+
+    corr_g.add((createServiceStop(arg[6], arg[1]), rdf.type, transit.ServiceStop))
+    corr_g.add((createServiceStop(arg[6], arg[1]), transit.service, createService(arg[6])))
+    corr_g.add((createServiceStop(arg[6], arg[1]), xsd.int, Literal(arg[5])))
+    corr_g.add((createServiceStop(arg[6], arg[1]), transit.stop, createStop(arg[1])))
+    return corr_g
+    
+#creates graph of stops
+def createBusCorrTree(*args):
+    for arg in args:
+        createBusCorrGraph(arg)
+    print(createBusCorrGraph(arg).serialize(format='turtle'))
+#----------------------------------------- end of bus correspondence code
 
 def main():
    # root = tk.Tk()
