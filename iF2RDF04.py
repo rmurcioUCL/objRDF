@@ -283,7 +283,7 @@ def createBusCorrGraph(arg):
 
     corr_g.add((createServiceStop(arg[6], arg[1]), rdf.type, transit.ServiceStop))
     corr_g.add((createServiceStop(arg[6], arg[1]), transit.service, createService(arg[6])))
-    corr_g.add((createServiceStop(arg[6], arg[1]), transit.sequence, Literal(arg[5], datatype=xsd.double)))
+    corr_g.add((createServiceStop(arg[6], arg[1]), transit.sequence, Literal(arg[5], datatype=xsd.int)))
     corr_g.add((createServiceStop(arg[6], arg[1]), transit.stop, createStop(arg[1])))
     return corr_g
     
