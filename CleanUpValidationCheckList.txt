@@ -1,0 +1,16 @@
+Clean Up - This should be done before run the iF2RDF program
+Strip fields from <, >, #
+Transform / to - (just to play safe)
+Transform Scientific notation (xxxExx) to regular notation
+
+Validation process - This is done while we're reading the csv
+
+Validation Action
+Empty Fields(no id fields) Create empty string - log P1
+Empty Fields(id fields) No import - log P2
+Numeric (no Lat/Long) Create empty string - log P1 Numeric (Lat/Long) ?Maybe No - log P2
+Fields with 'None' No import - log P2
+Strange patterns* Create empty string - log P1
+
+A strange pattern is when in a field the majority of the records are for example alphanumerics and only one or two are numerics.
+P1 and P2 are log files that contain the precise info for each problematic record
