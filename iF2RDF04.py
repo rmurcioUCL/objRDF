@@ -236,8 +236,51 @@ def createTubeStationTree(*args):
     for arg in args:
         createTubeStationGraph(arg)
     print(createTubeStationGraph(arg).serialize(format='turtle'))
+#---------------------------- Tube - time between stations ---------------------------
+#--------------------------- Sample data ----------------------
 
+timeBetween = ["Embankment Station", "Waterloo Station", 2]
 
+#------------------------- Functions ----------------
+
+#binding
+def bindingPrefixes(graphs):
+    for key in prefixes:
+        graphs.bind(key, prefixes[key])
+    return graphs
+
+#create station
+def createStation(name):
+    station = URIRef('http://data.linkedevents.org/transit/London/subwayStop/' + Literal(name).replace(" ", ""))
+    return station
+
+#----------------------------------- Create graph ----------------------------
+
+#this creates 'store' variable for the final conjunctive graph
+tbstore = plugin.get('IOMemory', Store)()
+tbg = Graph(tbstore)
+tbgraph = ConjunctiveGraph(tbstore)
+
+#creates graph
+def createTimeBetweenGraph(arg, i):
+    time = URIRef('http://data.linkedevents.org/travel/London/timeBetween#' + Literal(i))
+    tbg.add((time, rdf.type, qb.Observation))
+    tbg.add((time, travel.origin, createStation(arg[0])))
+    tbg.add((time, travel.destination, createStation(arg[1])))
+    tbg.add((time, travel.travelTime, Literal(arg[2], datatype=xsd.int)))
+    return tbg
+
+#creates the tree of data
+def createTimeBetweenTree(*args):
+    for arg in args:
+        createTimeBetweenGraph(arg, 0) # here and there typed 0 for http://data.linkedevents.org/travel/London/timeBetween#0>
+    print(createTimeBetweenGraph(arg, 0).serialize(format='turtle'))
+
+#------------------------------ Run ---------------------------------
+
+bindingPrefixes(tbgraph)
+print(createTimeBetweenTree(timeBetween))
+#------------------------------ End of Tube Time Between
 def main():
    # root = tk.Tk()
     #root.withdraw()
