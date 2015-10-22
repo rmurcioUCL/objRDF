@@ -105,7 +105,7 @@ def createAddress(stopId, stopsGUID):
     singleAddress = URIRef(('http://data.linkedevents.org/location/%s/address') % stopsGUID)
     return singleAddress
 
-#----------------------------------- Create graph ----------------------------
+#----------------------------------- Create graph for bus ----------------------------
 #creates graph of one bus stop
 def createGraph(arg,g):
     schema = Namespace("http://schema.org/")
@@ -157,7 +157,8 @@ def createGraph(arg,g):
     g.add((singleStop, locationOnt.businessType, arg[12]))
     g.add((singleStop, rdfs.label, arg[13]))
     return g
-#----------- TUBE SAMPLE DATA
+#----------------------------------------- Tube --------------------------------------------------
+#----------- TUBE SAMPLE DATA ------------------------------------------
 #tube_stations_rdf_ready.csv
 tubeStation = [-0.280251, 51.5028, 'Acton Town Station', 'Acton Town Station, London Underground Ltd., Gunnersbury Lane, London, W3 8HN', 'POINT(-0.280251204967499 51.5027503967285)']
 # an array
@@ -168,7 +169,7 @@ tubeLines = [
 #station_line.csv
 stationLine = ['Action Town Station', 'Piccadilly', 'District', 'test space Central']
 
-#------------------ Graph for Tube --------------------------------------------------------
+#------------------ Graph for Tube - functions --------------------------------------------------------
 
 #create station
 def createStation(name):
@@ -193,7 +194,7 @@ def createSingleLine(name):
     singleLine = URIRef('http://data.linkedevents.org/transit/London/subwayRoute/' + Literal(name).replace(" ", ""))
     return singleLine
 
-#------------------------- The graph for Tube
+#------------------------- The graph for Tube --------------------------
 #this creates 'store' variable for the final conjunctive graph
 tstore = plugin.get('IOMemory', Store)()
 tg = Graph(tstore)
