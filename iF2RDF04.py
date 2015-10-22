@@ -51,7 +51,10 @@ def definePrefixes():
         'locn': 'http://www.w3.org/ns/locn#',
         'foaf': 'http://xmlns.com/foaf/0.1/',
         'dc': 'http://purl.org/dc/elements/1.1/',
-        'trans': 'http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#'}
+        'trans': 'http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#'
+        'qb': 'http://purl.org/linked-data/cube#',
+        'dct' : 'http://purl.org/dc/terms/'
+        }
     return prefixes
 
 def bindingPrefixes(graphs,prefixes):
@@ -154,6 +157,85 @@ def createGraph(arg,g):
     g.add((singleStop, locationOnt.businessType, arg[12]))
     g.add((singleStop, rdfs.label, arg[13]))
     return g
+#----------- TUBE SAMPLE DATA
+#tube_stations_rdf_ready.csv
+tubeStation = [-0.280251, 51.5028, 'Acton Town Station', 'Acton Town Station, London Underground Ltd., Gunnersbury Lane, London, W3 8HN', 'POINT(-0.280251204967499 51.5027503967285)']
+# an array
+tubeLines = [
+    'Bakerloo', 'Central', 'Circle', 'District', 'Hammersmith & City', 'Jubilee', 'Metropolitan', 'Northern', 'Piccadilly', 'Victoria', 'Waterloo & City'
+]
+#lines per station - sample data
+#station_line.csv
+stationLine = ['Action Town Station', 'Piccadilly', 'District', 'test space Central']
+
+#------------------ Graph for Tube --------------------------------------------------------
+
+#create station
+def createStation(name):
+    station = URIRef('http://data.linkedevents.org/transit/London/subwayStop/' + Literal(name).replace(" ", ""))
+    return station
+
+#create station geometry URL
+def createStationGeometry(name):
+    stationGeometry = URIRef('http://data.linkedevents.org/transit/London/subwayStop/' + Literal(name).replace(" ", "") + '/geometry')
+    return stationGeometry
+
+#create subway route - batch
+def createSubwayRoute():
+    tubes = []
+    for i in tubeLines:
+        tubeline = URIRef('http://data.linkedevents.org/transit/London/subwayRoute/' + Literal(i).replace(" ", ""))
+        tubes.append(tubeline)
+    return tubes
+
+#create subway route for pairs station-line. station_line.csv is the input file
+def createSingleLine(name):
+    singleLine = URIRef('http://data.linkedevents.org/transit/London/subwayRoute/' + Literal(name).replace(" ", ""))
+    return singleLine
+
+#------------------------- The graph for Tube
+#this creates 'store' variable for the final conjunctive graph
+tstore = plugin.get('IOMemory', Store)()
+tg = Graph(tstore)
+tgraph = ConjunctiveGraph(tstore)
+
+#creates graph
+def createTubeStationGraph(arg):
+
+    tubes = createSubwayRoute()
+
+    tg.add((createStation(arg[2]), rdf.type, transit.Station))
+    tg.add((createStation(arg[2]), rdf.type, dul.Place))
+    tg.add((createStation(arg[2]), rdfs.label, Literal(arg[2])))
+    tg.add((createStation(arg[2]), dct.description, Literal(arg[3])))
+    tg.add((createStation(arg[2]), geo.location, createStationGeometry(arg[2])))
+    tg.add((createStation(arg[2]), locationOnt.businessType, URIRef('http://data.linkedevents.org/kos/3cixty/subway')))
+    tg.add((createStation(arg[2]), dc.publisher, URIRef('https://tfl.gov.uk')))
+
+    tg.add((createStationGeometry(arg[2]), rdf.type, geo.Point))
+    tg.add((createStationGeometry(arg[2]), geo.lat, Literal(arg[1], datatype=xsd.double)))
+    tg.add((createStationGeometry(arg[2]), geo.long, Literal(arg[0], datatype=xsd.double)))
+    tg.add((createStationGeometry(arg[2]), locn.geometry, Literal(arg[4], datatype=geosparql.wktLiteral)))
+    def createLines():
+        for i in tubes:
+            tg.add(((i), rdf.type, transit.SubwayRoute))
+        return tg
+#this adds pairs station-line for a single record.
+    def addStationLine(lines):
+        for i in lines[1:]:
+            tg.add((createStation(arg[2]), transit.route, createSingleLine(i)))
+        return tg
+
+    createLines()
+    addStationLine(stationLine)
+    return tg
+
+#creates the tree of data
+def createTubeStationTree(*args):
+    for arg in args:
+        createTubeStationGraph(arg)
+    print(createTubeStationGraph(arg).serialize(format='turtle'))
+
 
 def main():
    # root = tk.Tk()
