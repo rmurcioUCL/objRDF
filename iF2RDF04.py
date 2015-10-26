@@ -227,7 +227,7 @@ def createBuslineGraph(arg):
     busline_g.add((createLine(arg[0]), transit.routeService, createRouteService(arg[2], arg[3])))
     busline_g.add((createLine(arg[0]), transit.route, createRoute(arg[2])))
     busline_g.add((createGeometryURL(arg[0]), rdf.type, sf.LineString))
-    busline_g.add((createGeometryURL(arg[0]), locn.geometry, Literal(busWkt)))
+    busline_g.add((createGeometryURL(arg[0]), locn.geometry, Literal(arg[1])))
     return busline_g
 
 #creates graph of stops
