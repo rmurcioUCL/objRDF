@@ -80,20 +80,22 @@ def writeCsv(output,row):
         spamwriter.writerow(row)
         f.close()
 
-def writeLog(status,row):
+def writeLogP(status,row):
 
-    if status!=0:
-        if status==1:
-            row.append('P1')
-            writeCsv('P.csv',row)
-            return
-        elif status==2:
-            row.append('P2')
-            writeCsv('P.csv',row)
-            return
-    else:
-        writeCsv('cleaned.csv',row)
-        return row
+    if status==1:
+        row.append('P1')
+        writeCsv('P.csv',row)
+        return 1
+    elif status==2:
+        row.append('P2')
+        writeCsv('P.csv',row)
+        return 2
+
+
+def writeCleaned(row):
+    writeCsv('cleaned.csv',row)
+    return 0
+
 
 def cleanSpecialCharacter(row):
     for index in range(0,len(row)):
@@ -118,33 +120,34 @@ if __name__ == "__main__":
         busData[index]=cleanSpecialCharacter(busData[index])
 
         # Validate data
-        status=validateStopCode(busData[index][0])
-        writeLog(status,busData[index])
+        status0=validateStopCode(busData[index][0])
+        status1=validateBusStop(busData[index][1])
+        status2=validateNaptan(busData[index][2])
+        status3=validateLonLatNum(busData[index][4],busData[index][5])
+        status4=validateLonLatNaN(busData[index][4],busData[index][5])
+        status5=validateHeading(busData[index][6])
+        status6=validateStopArea(busData[index][7])
+        status7=validateVirtualBusStop(busData[index][8])
 
-        if(status==0):
-            status=validateBusStop(busData[index][1])
-            writeLog(status,busData[index])
+        if status0==0 and status1==0 and status2==0 and status3==0 and status4==0 and status5==0 and status6==0 and status7==0:
+            writeCleaned(busData[index])
+            continue
 
-        if(status==0):
-            status=validateNaptan(busData[index][2])
-            writeLog(status,busData[index])
+        if status0!=0:
+            writeLogP(status0,busData[index])
+        elif status1!=0:
+            writeLogP(status1,busData[index])
+        elif status2!=0:
+            writeLogP(status2,busData[index])
+        elif status3!=0:
+            writeLogP(status3,busData[index])
+        elif status4!=0:
+            writeLogP(status4,busData[index])
+        elif status5!=0:
+            writeLogP(status5,busData[index])
+        elif status6!=0:
+            writeLogP(status6,busData[index])
+        elif status7!=0:
+            writeLogP(status7,busData[index])
 
-        if(status==0):
-            status=validateLonLatNum(busData[index][4],busData[index][5])
-            writeLog(status,busData[index])
 
-        if(status==0):
-            status=validateLonLatNaN(busData[index][4],busData[index][5])
-            writeLog(status,busData[index])
-
-        if(status==0):
-            status=validateHeading(busData[index][6])
-            writeLog(status,busData[index])
-
-        if(status==0):
-            status=validateStopArea(busData[index][7])
-            writeLog(status,busData[index])
-
-        if(status==0):
-            status=validateVirtualBusStop(busData[index][8])
-            writeLog(status,busData[index])
