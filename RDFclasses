@@ -257,7 +257,25 @@ class BusCorrespondence(Busline):
         self.g.add((self.createServiceStop(), self.transit.stop, self.createBusStop()))
         return self
 
+class Area(RDF):
+    def __init__(self, name, code, geom):
+        self.name = name
+        self.code = code
+        self.geom = geom
 
+    def createArea(self):
+        area = URIRef('http://data.linkedevents.org/transit/London/area/' + Literal(self.code))
+        return area
 
+    def createAreaGeom(self):
+        areaGeom = URIRef(self.createArea() + '/geometry')
+        return areaGeom
 
+    def createAreaGraph(self):
+        self.g.add((self.createArea(), self.rdf.type, self.schema.AdministrativeArea))
+        self.g.add((self.createArea(), self.rdfs.label, Literal(self.name)))
+        self.g.add((self.createArea(), self.dct.identifier, Literal(self.code)))
+        self.g.add((self.createArea(), self.geo.location, self.createAreaGeom()))
+        self.g.add((self.createAreaGeom(), self.locn.geometry, Literal(self.geom)))
+        return self
 
