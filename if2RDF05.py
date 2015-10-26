@@ -1,3 +1,7 @@
+# coding=utf-8
+__author__ = 'patrick'
+
+__author__ = 'Wick 1'
 __author__ = 'casa'
 # -*- coding: utf-8 -*-
 #libraries
@@ -11,7 +15,7 @@ import pyproj
 from rdflib import URIRef, Literal, Namespace, plugin, Graph, ConjunctiveGraph
 from rdflib.store import Store
 
-def readCsv(inputfile):
+def readCsv(inputfile): #+TICKED
     try:
           f=open(inputfile,'rU');
           rf=csv.reader(f,delimiter=',');
@@ -20,6 +24,7 @@ def readCsv(inputfile):
          print ("I/O error({0}): {1}".format(e.errno, e.strerror))
          raise
 
+'''
 def createZip(nzip,outFile):
     zf = zipfile.ZipFile(nzip, mode='w')
     try:
@@ -28,15 +33,16 @@ def createZip(nzip,outFile):
     finally:
         print ('Zip created')
         zf.close()
+'''
 
-def getUid(r0):
-    naptan = Namespace("http://transport.data.gov.uk/def/naptan/")
+def getUid(r0): #+TICKED
+    naptan = Namespace("http://transport.data.gov.uk/def/naptan/") ##MAYBE CHANGE??##
     #objectID  = r1
     idencode=r0.encode('utf-8')
     uid=uuid.uuid5(naptan, idencode)
     return uid
 
-def ConvertProj(lat,lon):
+def ConvertProj(lat,lon): #+TICKED
     Bng = pyproj.Proj(init='epsg:27700')
     Wgs84 = pyproj.Proj(init='epsg:4326')
     #print (lat+'-'+lon)
@@ -68,58 +74,61 @@ def definePrefixes():
         'trans': 'http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#'}
     return prefixes
 
-def bindingPrefixes(graphs,prefixes):
+def bindingPrefixes(graphs,prefixes): #+TICKED
     for key in prefixes:
         graphs.bind(key, prefixes[key])
     return graphs
 
-def getBusData(row):
+def getTrainData(row): #amended #+TICKED
 
     #naptan = Namespace("http://transport.data.gov.uk/def/naptan/")
     #uid=uuid.uuid5(naptan, idencode)
     #idencode=row[0].encode('utf-8')
-    objectID  = row[1]    
+    objectID  = row[1]
     uid=getUid(row[0])
 
-    stopLat=''
-    stopLong=''
+    stationLat=''
+    stationLong=''
     try:
-        stopLat,stopLong=ConvertProj(row[4],row[5])
+        stationLat,stationLong=ConvertProj(row[6],row[7])
     except TypeError as e:
         print ("wrong lat, long -".format(e))
 
-    noAddress=""
-    stopid = objectID
-    stopGeometry = "POINT ("+str(stopLat) +" "+str(stopLong)+")"
-    stopRoute = URIRef('http://data.linkedevents.org/transit/London/route/')
-    stopGUID = uid
-    stopTitle = Literal(str(row[3]))
-    stopAddress = Literal(noAddress)
-    stopLocnAddress = Literal(noAddress)
-    stopAddressLocality = Literal('London')
-    stopAdminUnitL2 = Literal('London')
-    stopPublisher = URIRef('https://tfl.gov.uk/modes/buses/')
-    stopBusinessType = URIRef('http://data.linkedevents.org/kos/3cixty/busstop')
-    stopLabel = Literal('Bus Stop - '+str(row[3]))
+    #noAddress=""
+    stationid = objectID
+    stationGeometry = "POINT ("+str(stationLat) +" "+str(stationLong)+")"
+    stationRoute = URIRef('http://data.linkedevents.org/transit/London/route/') #DOESNT NAME THE ROUTE YET- NEED TO BE SOURCED FROM ANOTHER FILE
+    stationGUID = uid
+    stationTitle = Literal(str(row[3]))
+    #stopAddress = Literal(noAddress)
+    #stopLocnAddress = Literal(noAddress)
+    #stopAddressLocality = Literal('London')
+    #stopAdminUnitL2 = Literal('London')
+    stationPublisher = URIRef('https://tfl.gov.uk/modes/trains/') ##??IS THIS CORRECT??
+    stationBusinessType = URIRef('http://data.linkedevents.org/kos/3cixty/trainstation')
+    #stopLabel = Literal('Train Stop - '+str(row[3]))
 
-    lst = [stopid, stopLat, stopLong, stopGeometry, stopRoute, stopGUID, stopTitle, stopAddress, stopLocnAddress,\
-           stopAddressLocality, stopAdminUnitL2, stopPublisher, stopBusinessType, stopLabel]
+    #lst = [stopid, stopLat, stopLong, stopGeometry, stopRoute, stopGUID, stopTitle, stopAddress, stopLocnAddress,\
+    #       stopAddressLocality, stopAdminUnitL2, stopPublisher, stopBusinessType, stopLabel]
+    lst = [stationid, stationLat, stationLong, stationGeometry, stationRoute, stationGUID, stationTitle, stationBusinessType, stationPublisher]
     return lst
 
-def getBusLineData(row):
+'''
+def getTrainLineData(row):
 
-    busRoute=row[0]
-    busRun  = row[1]    
-    busId=getUid(busRoute)
-    busWkt = row[3]
-    busLabel = row[2]
-    lst = [busId, busWkt, busRoute, busRun, busLabel]
+    trainRoute=row[0]
+    trainRun  = row[1]
+    trainId=getUid(trainRoute)
+    trainWkt = row[3]
+    trainLabel = row[2]
+    lst = [trainId, trainWkt, trainRoute, trainRun, trainLabel]
     return lst
-
-def getBusCData(row):
+'''
+'''
+def getTrainCData(row):
 
     stop=row[0]
-    stopID  = row[1]    
+    stopID  = row[1]
     stopN=getUid(row[2])
     route = row[3]
     srun = row[4]
@@ -127,37 +136,40 @@ def getBusCData(row):
     service =  row[6]
     lst = [stop, stopID, stopN, route, srun, seq, service]
     return lst
-    
-#this creates a url of a single bus stop with the test id
-def createBusStop(stopId):
-    singleStop = URIRef("http://data.linkedevents.org/transit/London/stop/" + stopId)
-    return singleStop
+'''
+#this creates a url of a single train station with the test id
+def createTrainStation(stationId): #update to train
+    singleStation = URIRef("http://data.linkedevents.org/transit/London/station/" + stationId)
+    return singleStation
 
 #this creates geometry url
-def createGeometry(stopId, stopsGUID):
-    singleGeometry = URIRef(('http://data.linkedevents.org/location/%s/geometry') % stopsGUID)
+def createGeometry(stationId, stationGUID): #+TICKED
+    singleGeometry = URIRef(('http://data.linkedevents.org/location/%s/geometry') % stationGUID)
     return singleGeometry
 
 #this creates single address
-def createAddress(stopId, stopsGUID):
-    singleAddress = URIRef(('http://data.linkedevents.org/location/%s/address') % stopsGUID)
+def createAddress(stationId, stationGUID):
+    singleAddress = URIRef(('http://data.linkedevents.org/location/%s/address') % stationGUID)
     return singleAddress
 
-#-------- Buslines    
+#-------- Trainlines
+'''
 #create line URL
-def createLine(busId):
-    lineId = URIRef('http://data.linkedevents.org/transit/London/busLine/' + busId)
+def createLine(trainId):
+    lineId = URIRef('http://data.linkedevents.org/transit/London/trainLine/' + trainId)
     return lineId
 
+
 #create line geometry url
-def createGeometryURL(busId):
-    geometryURL = URIRef('http://data.linkedevents.org/transit/London/busLine/' + busId + '/geometry')
+def createGeometryURL(trainId):
+    geometryURL = URIRef('http://data.linkedevents.org/transit/London/trainLine/' + trainId + '/geometry')
     return geometryURL
 
 #create geometry
-#def createGeometry(busWkt):
- #   routeGeometry = Literal(busWkt)
+#def createGeometry(trainWkt):
+ #   routeGeometry = Literal(trainWkt)
   #  return routeGeometry
+
 
 #create routeService or serviceId
 def createRouteService(route, run):
@@ -166,39 +178,43 @@ def createRouteService(route, run):
 
 #create route
 def createRoute(route):
-    busRoute = URIRef('http://data.linkedevents.org/transit/London/route/' + route)
-    return busRoute
+    trainRoute = URIRef('http://data.linkedevents.org/transit/London/route/' + route)
+    return trainRoute
+
 
 def createServiceStop(service, stopCode):
     serviceStopId = URIRef('http://data.linkedevents.org/transit/London/serviceStop/' + service + '/' + Literal(stopCode))
     return serviceStopId
-    
+
+
 #create service URL
 def createService(service):
     serviceURL = URIRef('http://data.linkedevents.org/transit/London/service/' + service)
     return serviceURL
+
+
 #create stop URL
-def createStop(stopCode):
-    stopURL = URIRef('http://data.linkedevents.org/transit/London/stop/' + Literal(stopCode))
+def createStop(stopCode): #+TICKED
+    stopURL = URIRef('http://data.linkedevents.org/transit/London/station/' + Literal(stopCode)) #amended
     return stopURL
-    
-    
-def createBusCGraph(arg,busline_g):
+
+
+def createTrainCGraph(arg,trainline_g): ##?
     transit = Namespace("http://vocab.org/transit/terms/")
     xsd = Namespace('http://www.w3.org/2001/XMLSchema#')
     rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 
     singleServiceStop=createServiceStop(arg[6], arg[1])
     singleService=createService(arg[6])
-    singleStop=createStop(arg[1])
-    
-    busline_g.add((singleServiceStop, rdf.type, transit.ServiceStop))
-    busline_g.add((singleServiceStop, transit.service, singleService))
-    busline_g.add((singleServiceStop, transit.sequence, Literal(arg[5], datatype=xsd.int)))
-    busline_g.add((singleServiceStop, transit.stop, singleStop))
-    return busline_g
-    
-def createBuslineGraph(arg,busline_g):
+    singleStation=createStop(arg[1])
+
+    trainline_g.add((singleServiceStop, rdf.type, transit.ServiceStop))
+    trainline_g.add((singleServiceStop, transit.service, singleService))
+    trainline_g.add((singleServiceStop, transit.sequence, Literal(arg[5], datatype=xsd.int)))
+    trainline_g.add((singleServiceStop, transit.stop, singleStation))
+    return trainline_g
+
+def createTrainGraph(arg,trainline_g): #??
 
     rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
     geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
@@ -206,138 +222,140 @@ def createBuslineGraph(arg,busline_g):
     rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
     transit = Namespace("http://vocab.org/transit/terms/")
     locn = Namespace("hƒttp://www.w3.org/ns/locn#")
-    geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
-       
+    #geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
+
     idb=arg[0].urn
     idb=idb[9:]
     singleLine=createLine(idb)
     singleGeometryURL=createGeometryURL(idb)
     singleService=createRouteService(arg[2], arg[3])
-    
-    busline_g.add((singleLine, rdf.type, transit.BusRoute))
-    busline_g.add((singleLine, geo.location, singleGeometryURL))
-    busline_g.add((singleLine, rdfs.label, Literal(arg[4])))
-    busline_g.add((singleLine, transit.routeService, singleService))
-    busline_g.add((singleLine, transit.route, createRoute(arg[2])))
-    busline_g.add((singleGeometryURL, rdf.type, sf.LineString))
-    busline_g.add((singleGeometryURL, locn.geometry, Literal(arg[1], datatype=geosparql.wktLiteral)))
-    return busline_g
-    
-    
-#creates graph of one bus stop
-def createBusGraph(arg,g):
+
+    trainline_g.add((singleLine, rdf.type, transit.trainRoute)) #trainroute to trainroute
+    trainline_g.add((singleLine, geo.location, singleGeometryURL))
+    trainline_g.add((singleLine, rdfs.label, Literal(arg[4])))
+    trainline_g.add((singleLine, transit.routeService, singleService))
+    trainline_g.add((singleLine, transit.route, createRoute(arg[2])))
+    trainline_g.add((singleGeometryURL, rdf.type, sf.LineString))
+    trainline_g.add((singleGeometryURL, locn.geometry, Literal(arg[1], datatype=geosparql.wktLiteral)))
+    return trainline_g
+'''
+
+#creates graph of one train station
+def createTrainGraph(arg,g): #+TICKED
     schema = Namespace("http://schema.org/")
     naptan = Namespace("http://transport.data.gov.uk/def/naptan/london")
-  #  owl = Namespace("http://www.w3.org/2002/07/owl#")
+  # owl = Namespace("http://www.w3.org/2002/07/owl#")
     xsd = Namespace("http://www.w3.org/2001/XMLSchema#")
     rdfs = Namespace("http://www.w3.org/2000/01/rdf-schema#")
-   # vcard = Namespace("http://www.w3.org/2006/vcard/ns#")
+  # vcard = Namespace("http://www.w3.org/2006/vcard/ns#")
     locationOnt = Namespace("http://data.linkedevents.org/def/location#")
-    geom = Namespace("http://geovocab.org/geometry#")
-    #unknown = Namespace("http://data.linkedevents.org/def/unknown#")
+  # geom = Namespace("http://geovocab.org/geometry#")
+  # unknown = Namespace("http://data.linkedevents.org/def/unknown#")
     geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
     geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
     rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
     transit = Namespace("http://vocab.org/transit/terms/")
-    dcterms = Namespace("http://purl.org/dc/terms/")
+  # dcterms = Namespace("http://purl.org/dc/terms/")
     dul = Namespace("http://ontologydesignpatterns.org/ont/dul/DUL.owl#")
     locn = Namespace("http://www.w3.org/ns/locn#")
-    #foaf = Namespace("http://xmlns.com/foaf/0.1/")
+    stationRouteService = URIRef('http://data.linkedevents.org/transit/London/routeService/') ##NEW OBJECT##
+  # foaf = Namespace("http://xmlns.com/foaf/0.1/")
     dc = Namespace("http://purl.org/dc/elements/1.1/")
-    #trans = Namespace("http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#")
+  # trans = Namespace("http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#")
 
-    singleStop = createBusStop(arg[0])
-    singleAddress = createAddress(arg[0], arg[5])
-    singleGeometry = createGeometry(arg[0], arg[5])
-    
-    g.add((singleStop, rdf.type, naptan.BusStop))
-    g.add((singleStop, rdf.type, dul.Place))
-    g.add((singleStop, rdf.type, transit.Stop))
-    g.add((singleStop, dc.identifier, Literal(arg[0])))
-    g.add((singleStop, geom.geometry, singleGeometry))
-    g.add((singleStop, schema.geo, singleGeometry))
-    g.add((singleAddress, rdf.type, schema.PostalAddress))
-    g.add((singleAddress, rdf.type, dcterms.Location))
-    g.add((singleAddress, dcterms.title, arg[6]))
-    g.add((singleAddress, schema.streetAddress, arg[7]))
-    g.add((singleAddress, locn.address, arg[8]))
-    g.add((singleAddress, schema.addressLocality, arg[9]))
-    g.add((singleAddress, locn.adminUnitL12, arg[10]))
+    singleStation = createTrainStation(arg[0])
+    singleAddress = createAddress(arg[0], arg[5]) ##check arg[5]#singleStation = self.createTrainStation(stationid)
+    singleGeometry = createGeometry(arg[0], arg[5]) #check arg[5]#singleAddress = self.createAddress(stationGUID)
+
+    g.add((singleStation, rdf.type, naptan.TrainStation))
+    g.add((singleStation, rdf.type, dul.Place))
+    g.add((singleStation, rdf.type, transit.Station))
+    g.add((singleStation, dc.identifier, Literal(arg[0])))
+    #g.add((singleStation, geom.geometry, singleGeometry))
+    #g.add((singleStation, schema.geo, singleGeometry))
+    #g.add((singleAddress, rdf.type, schema.PostalAddress))
+    #g.add((singleAddress, rdf.type, dcterms.Location))
+    #g.add((singleAddress, dcterms.title, arg[6]))
+    #g.add((singleAddress, schema.streetAddress, arg[7]))
+    #g.add((singleAddress, locn.address, arg[8]))
+    #g.add((singleAddress, schema.addressLocality, arg[9]))
+    #g.add((singleAddress, locn.adminUnitL12, arg[10]))
     g.add((singleGeometry, rdf.type, geo.Point))
     g.add((singleGeometry, geo.lat, Literal(arg[1], datatype=xsd.double)))
     g.add((singleGeometry, geo.long, Literal(arg[2], datatype=xsd.double)))
     g.add((singleGeometry, locn.geometry, Literal(arg[3], datatype=geosparql.wktLiteral)))
-    g.add((singleStop, geo.location, singleGeometry))
-    g.add((singleStop, transit.route, arg[4]))
-    g.add((singleStop, schema.location, singleAddress))
-    g.add((singleStop, locn.address, singleAddress))
-    g.add((singleStop, dc.publisher, arg[11]))
-    g.add((singleStop, locationOnt.businessType, arg[12]))
-    g.add((singleStop, rdfs.label, arg[13]))
+    g.add((singleStation, transit.route, arg[4]))
+    g.add((singleStation, transit.routeService, stationRouteService)) ##NEW PREDICATE##
+    g.add((singleStation, schema.name, singleAddress)) #NEW
+    g.add((singleStation, geo.location, singleAddress)) #g.add((singleStation, schema.location, singleAddress))
+    #g.add((singleStation, locn.address, singleAddress))
+    g.add((singleStation, dc.publisher, arg[8]))
+    g.add((singleStation, locationOnt.businessType, (arg[7])))
+    g.add((singleStation, rdfs.label, Literal(arg[6])))  #g.add((singleStation, rdfs.label, arg[3]))
     return g
 
-def main():
-   # root = tk.Tk()
+def main(): #+TICKED
+    #root = tk.Tk()
     #root.withdraw()
     #inFile = filedialog.askopenfilename()
-    pathf="/Users/Roberto/Documents/"
-    inFileB = pathf+"bus-stops-10-06-15.csv"
-    outFileB=pathf+"bus.ttl"
-    inFileBR = pathf+"busline_content.csv"
-    outFileBR=pathf+"busR.ttl"
-    inFileBC = pathf+"buscorrespondence.csv"
-    outFileBC=pathf+"busC.ttl"
-  
+    pathf="/Users/patrick/3cixty/IN/openDataSources/"
+    inFileB = pathf+"RailReferences_Naptan_151022.csv"
+    outFileB=pathf+"train_stations.ttl"
+    #inFileBR = pathf+"trainline_content.csv"
+    #outFileBR=pathf+"trainR.ttl"
+    #inFileBC = pathf+"traincorrespondence.csv"
+    #outFileBC=pathf+"trainC.ttl"
+
     csvB=readCsv(inFileB)
-    csvBR=readCsv(inFileBR)
-    csvBC=readCsv(inFileBC) 
-    
-    
+    #csvBR=readCsv(inFileBR)
+    #csvBC=readCsv(inFileBC)
+
+
     next(csvB, None)  #FILE WITH HEADERS
-    next(csvBR, None)  #FILE WITH HEADERS
-    next(csvBC, None)  #FILE WITH HEADERS
-    
+    #next(csvBR, None)  #FILE WITH HEADERS
+    #next(csvBC, None)  #FILE WITH HEADERS
+
     store = plugin.get('IOMemory', Store)()
     g = Graph(store)
     graph = ConjunctiveGraph(store)
-    busline_store = plugin.get('IOMemory', Store)()
-    busline_g= Graph(busline_store)
-    busline_graph = ConjunctiveGraph(busline_store)
-    busC_store = plugin.get('IOMemory', Store)()
-    busC_g= Graph(busC_store)
-    busC_graph = ConjunctiveGraph(busC_store)
-    
-    
+    #trainline_store = plugin.get('IOMemory', Store)()
+    #trainline_g= Graph(trainline_store)
+    #trainline_graph = ConjunctiveGraph(trainline_store)
+    #trainC_store = plugin.get('IOMemory', Store)()
+    #trainC_g= Graph(trainC_store)
+    #trainC_graph = ConjunctiveGraph(trainC_store)
+
+
     prefixes=definePrefixes()
     print('Binding Prefixes')
     bindingPrefixes(graph,prefixes)
-    bindingPrefixes(busline_graph,prefixes)
-    bindingPrefixes(busC_graph,prefixes)
-    
-    print('Creating graph-Bus...')
+    #bindingPrefixes(trainline_graph,prefixes)
+    #bindingPrefixes(trainC_graph,prefixes)
+
+    print('Creating graph-Train...') #AMENDED
     for row in csvB:
-        lstData = getBusData(row)
-        createBusGraph(lstData,g)
-    createBusGraph(lstData,g).serialize(outFileB,format='turtle')
-    
-    print('Creating graph-BusR...')
-    for row in csvBR:
-        lstData = getBusLineData(row)
-        createBuslineGraph(lstData,busline_g)
-    createBuslineGraph(lstData,busline_g).serialize(outFileBR,format='turtle')    
-    
-    print('Creating graph-BusC...')
-    for row in csvBR:
-        lstData = getBusCData(row)
-        createBusCGraph(lstData,busC_g)
-    createBusCGraph(lstData,busC_g).serialize(outFileBC,format='turtle')    
+        lstData = getTrainData(row)
+        createTrainGraph(lstData,g)
+    createTrainGraph(lstData,g).serialize(outFileB,format='turtle')
+
+    #print('Creating graph-trainR...')
+    #for row in csvBR:
+    #    lstData = gettrainLineData(row)
+    #    createtrainlineGraph(lstData,trainline_g)
+    #createtrainlineGraph(lstData,trainline_g).serialize(outFileBR,format='turtle')
+
+    #print('Creating graph-trainC...')
+    #for row in csvBR:
+    #    lstData = gettrainCData(row)
+    #    createtrainCGraph(lstData,trainC_g)
+    #createTrainCGraph(lstData,trainC_g).serialize(outFileBC,format='turtle')
     #nzip = pathf+time.strftime("%Y-%m-%d")+'.zip'
    # nzipB = pathf+outFileB+'.zip'
    # nzipBR = pathf+outFileBR+'.zip'
    # createZip(nzipB,outFileB)
    # createZip(nzipBR,outFileBR)
-    
+
     print ('DONE!')
-    
+
 if __name__ == "__main__":
     main();
