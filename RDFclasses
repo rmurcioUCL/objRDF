@@ -214,7 +214,7 @@ class Busline(Bus):
         return busline
 
     def createBuslineGeom(self):
-        buslineGeom = URIRef('http://data.linkedevents.org/transit/London/busLine/' + Literal(self.route) + '/geometry')
+        buslineGeom = URIRef(self.createBusline() + '/geometry')
         return buslineGeom
 
     def createRoute(self):
