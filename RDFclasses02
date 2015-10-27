@@ -277,7 +277,7 @@ class Area(RDF):
     def createAreaGraph(self):
         self.g.add((self.createArea(), self.rdf.type, self.schema.AdministrativeArea))
         self.g.add((self.createArea(), self.rdfs.label, Literal(str(self.name).title()))
-        self.g.add((self.createArea(), self.dct.identifier, Literal(self.code)))
+        self.g.add((self.createArea(), self.dct.identifier, Literal(self.code))))
         self.g.add((self.createArea(), self.geo.location, self.createAreaGeom()))
         self.g.add((self.createAreaGeom(), self.locn.geometry, Literal(self.geom)))
         return self
