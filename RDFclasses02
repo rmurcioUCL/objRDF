@@ -61,11 +61,6 @@ class RDF:
             self.g.bind(key, prefixes[key])
         return self.g
 
-    def createRDF(self):
-        self.bindingPrefixes()
-        print(self.graph.serialize(format='turtle'))
-
-
 class Tube(RDF):
     def __init__(self, x, y, station, description, wkt, stationLine, lines):
         RDF.__init__(self)
@@ -103,11 +98,6 @@ class Tube(RDF):
             tubes.append(tubeline)
         return tubes
 
-    def createLines(self):
-        for i in self.tubelines:
-            singleLine = URIRef('http://data.linkedevents.org/transit/London/subwayRoute/' + Literal(i).replace(" ", ""))
-            return singleLine
-
     def createTubeGraph(self):
         self.tubes = self.createSubwayRoute()
         self.g.add((self.createStation(), self.rdf.type, self.transit.Station))
@@ -123,7 +113,8 @@ class Tube(RDF):
         self.g.add((self.createStationGeom(), self.locn.geometry, Literal(self.wkt, datatype=self.geosparql.wktLiteral)))
 
         for i in self.tubes:
-            self.g.add(((i.createLines()), self.rdf.type, self.transit.SubwayRoute))
+            self.g.add((i, self.rdf.type, self.transit.SubwayRoute))
+        self.bindingPrefixes()
         return self.g
 
     def addStationLine(self):
@@ -133,6 +124,7 @@ class Tube(RDF):
 
 class TimeBetween(Tube):
     def __init__(self, id, origin, time, destination):
+        RDF.__init__(self)
         self.id = id
         self.origin = origin
         self.time = time
@@ -201,16 +193,17 @@ class Bus(RDF):
         self.g.add((self.createGeometry(), self.locn.geometry, Literal(self.wkt, datatype=self.geosparql.wktLiteral)))
 
         self.g.add((self.createBusStop(), self.geo.location, self.createGeometry()))
-        #self.g.add((self.createBusStop(), self.transit.route, Literal(self.route))) #this might be unnecessary. They generate redundant predicates - test for these
         self.g.add((self.createBusStop(), self.schema.location, self.createAddress()))
         self.g.add((self.createBusStop(), self.locn.address, self.createAddress()))
         self.g.add((self.createBusStop(), self.dc.publisher, Literal(self.publisher)))
         self.g.add((self.createBusStop(), self.locationOnt.businessType, Literal(self.businessType)))
         self.g.add((self.createBusStop(), self.rdfs.label, self.createLabel()))
+        self.bindingPrefixes()
         return self.g
 
 class Busline(Bus):
     def __init__(self, route, run, wkt, label):
+        RDF.__init__(self)
         self.route = route
         self.run = run
         self.wkt = wkt
@@ -240,10 +233,12 @@ class Busline(Bus):
         self.g.add((self.createBusline(), self.transit.route, self.createRoute()))
         self.g.add((self.createBuslineGeom(), self.rdf.type, self.sf.LineString))
         self.g.add((self.createBuslineGeom(), self.locn.geometry, Literal(self.wkt)))
+        self.bindingPrefixes()
         return self.g
 
 class BusCorrespondence(Busline):
     def __init__(self, stopId, route, run, sequence):
+        RDF.__init__(self)
         self.stopId = stopId
         self.route = route
         self.run = run
@@ -262,6 +257,7 @@ class BusCorrespondence(Busline):
         self.g.add((self.createServiceStop(), self.transit.service, self.createService()))
         self.g.add((self.createServiceStop(), self.transit.sequence, Literal(self.sequence, datatype=self.xsd.int)))
         self.g.add((self.createServiceStop(), self.transit.stop, self.createBusStop()))
+        self.bindingPrefixes()
         return self.g
 
 class Area(RDF):
@@ -286,4 +282,5 @@ class Area(RDF):
         self.g.add((self.createArea(), self.dct.identifier, Literal(self.code)))
         self.g.add((self.createArea(), self.geo.location, self.createAreaGeom()))
         self.g.add((self.createAreaGeom(), self.locn.geometry, Literal(self.geom)))
+        self.bindingPrefixes()
         return self.g
