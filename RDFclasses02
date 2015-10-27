@@ -1,4 +1,5 @@
 #libraries
+import rdflib
 from rdflib import URIRef, Literal, Namespace, plugin, Graph, ConjunctiveGraph
 from rdflib.store import Store
 
@@ -28,9 +29,6 @@ prefixes = {'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
 
 class RDF:
     def __init__(self):
-        self. store = plugin.get('IOMemory', Store)()
-        self.g = Graph(self.store)
-        self.graph = ConjunctiveGraph(self.store)
         self.geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
         self.foaf = Namespace("http://xmlns.com/foaf/0.1/")
         self.geom = Namespace("http://geovocab.org/geometry#")
@@ -54,17 +52,23 @@ class RDF:
         self.dct = Namespace('http://purl.org/dc/terms/')
         self.sf = Namespace("http://www.opengis.net/ont/sf#")
 
+        self.store = plugin.get('IOMemory', Store)()
+        self.g = Graph(self.store)
+        self.graph = ConjunctiveGraph(self.store)
+
     def bindingPrefixes(self):
         for key in prefixes:
-            self.bind(key, prefixes[key])
-        return self
+            self.g.bind(key, prefixes[key])
+        return self.g
 
     def createRDF(self):
+        self.bindingPrefixes()
         print(self.graph.serialize(format='turtle'))
 
 
 class Tube(RDF):
     def __init__(self, x, y, station, description, wkt, stationLine, lines):
+        RDF.__init__(self)
         self.tubelines = ['Bakerloo',
                           'Central',
                           'Circle',
@@ -120,7 +124,7 @@ class Tube(RDF):
 
         for i in self.tubes:
             self.g.add(((i.createLines()), self.rdf.type, self.transit.SubwayRoute))
-        return self
+        return self.g
 
     def addStationLine(self):
         for i in self.lines[1:]:
@@ -147,6 +151,7 @@ class TimeBetween(Tube):
 
 class Bus(RDF):
     def __init__(self, stopId, stopGUID, x, y, label, wkt, addressLocality, adminUnit, publisher, businessType):
+        RDF.__init__(self)
         self.stopId = stopId
         self.stopGUID = stopGUID
         self.x = x
@@ -159,7 +164,7 @@ class Bus(RDF):
         self.businessType = businessType
 
     def createBusStop(self):
-        busStop = URIRef("http://data.linkedevents.org/transit/London/stop/" + self.stopId)
+        busStop = URIRef("http://data.linkedevents.org/transit/London/stop/" + Literal(self.stopId))
         return busStop
 
     def createGeometry(self):
@@ -179,7 +184,7 @@ class Bus(RDF):
         self.g.add((self.createBusStop(), self.rdf.type, self.naptan.BusStop))
         self.g.add((self.createBusStop(), self.rdf.type, self.dul.Place))
         self.g.add((self.createBusStop(), self.rdf.type, self.transit.Stop))
-        self.g.add((self.createBusStop(), self.dc.identifier, self.stopId))
+        self.g.add((self.createBusStop(), self.dc.identifier, Literal(self.stopId)))
         self.g.add((self.createBusStop(), self.geom.geometry, self.createGeometry()))
 
         self.g.add((self.createAddress(), self.rdf.type, self.schema.PostalAddress))
@@ -202,7 +207,7 @@ class Bus(RDF):
         self.g.add((self.createBusStop(), self.dc.publisher, Literal(self.publisher)))
         self.g.add((self.createBusStop(), self.locationOnt.businessType, Literal(self.businessType)))
         self.g.add((self.createBusStop(), self.rdfs.label, self.createLabel()))
-        return self
+        return self.g
 
 class Busline(Bus):
     def __init__(self, route, run, wkt, label):
@@ -235,7 +240,7 @@ class Busline(Bus):
         self.g.add((self.createBusline(), self.transit.route, self.createRoute()))
         self.g.add((self.createBuslineGeom(), self.rdf.type, self.sf.LineString))
         self.g.add((self.createBuslineGeom(), self.locn.geometry, Literal(self.wkt)))
-        return self
+        return self.g
 
 class BusCorrespondence(Busline):
     def __init__(self, stopId, route, run, sequence):
@@ -257,10 +262,11 @@ class BusCorrespondence(Busline):
         self.g.add((self.createServiceStop(), self.transit.service, self.createService()))
         self.g.add((self.createServiceStop(), self.transit.sequence, Literal(self.sequence, datatype=self.xsd.int)))
         self.g.add((self.createServiceStop(), self.transit.stop, self.createBusStop()))
-        return self
+        return self.g
 
 class Area(RDF):
     def __init__(self, name, code, geom):
+        RDF.__init__(self)
         self.name = name
         self.code = code
         self.geom = geom
@@ -280,6 +286,4 @@ class Area(RDF):
         self.g.add((self.createArea(), self.dct.identifier, Literal(self.code)))
         self.g.add((self.createArea(), self.geo.location, self.createAreaGeom()))
         self.g.add((self.createAreaGeom(), self.locn.geometry, Literal(self.geom)))
-        return self
-
-
+        return self.g
