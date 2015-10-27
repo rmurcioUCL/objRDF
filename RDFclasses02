@@ -1,0 +1,284 @@
+#libraries
+from rdflib import URIRef, Literal, Namespace, plugin, Graph, ConjunctiveGraph
+from rdflib.store import Store
+
+#temporary vocabularies
+prefixes = {'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
+            'foaf': 'http://xmlns.com/foaf/0.1/',
+            'geom': 'http://geovocab.org/geometry#',
+            'transit': 'http://vocab.org/transit/terms/',
+            'locn': 'http://www.w3.org/ns/locn#',
+            'vcard': 'http://www.w3.org/2006/vcard/ns#',
+            'dcterms': 'http://purl.org/dc/terms/',
+            'schema': 'http://schema.org/',
+            'geosparql': 'http://www.opengis.net/ont/geosparql#',
+            'unknown': 'http://data.linkedevents.org/def/unknown#',
+            'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+            'dul': 'http://ontologydesignpatterns.org/ont/dul/DUL.owl#',
+            'naptan': 'http://transport.data.gov.uk/def/naptan/',
+            'xsd': 'http://www.w3.org/2001/XMLSchema#',
+            'owl': 'http://www.w3.org/2002/07/owl#',
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'locationOnt': 'http://data.linkedevents.org/def/location#',
+            'dc': 'http://purl.org/dc/elements/1.1/',
+            'travel': 'http://3cixty.com/ontology#',
+            'qb': 'http://purl.org/linked-data/cube#',
+            'dct': 'http://purl.org/dc/terms/',
+            'sf': 'http://www.opengis.net/ont/sf#'}
+
+class RDF:
+    def __init__(self):
+        self. store = plugin.get('IOMemory', Store)()
+        self.g = Graph(self.store)
+        self.graph = ConjunctiveGraph(self.store)
+        self.geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+        self.foaf = Namespace("http://xmlns.com/foaf/0.1/")
+        self.geom = Namespace("http://geovocab.org/geometry#")
+        self.unknown = Namespace("http://data.linkedevents.org/def/unknown#")
+        self.transit = Namespace("http://vocab.org/transit/terms/")
+        self.locn = Namespace("http://www.w3.org/ns/locn#")
+        self.vcard = Namespace('http://www.w3.org/2006/vcard/ns#')
+        self.dcterms = Namespace("http://purl.org/dc/terms/")
+        self.schema = Namespace('http://schema.org/')
+        self.geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
+        self.rdfs = Namespace('http://www.w3.org/2000/01/rdf-schema#')
+        self.naptan = Namespace('http://transport.data.gov.uk/def/naptan/')
+        self.xsd = Namespace('http://www.w3.org/2001/XMLSchema#')
+        self.owl = Namespace('http://www.w3.org/2002/07/owl#')
+        self.rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        self.locationOnt = Namespace("http://data.linkedevents.org/def/location#")
+        self.dul = Namespace('http://ontologydesignpatterns.org/ont/dul/DUL.owl#')
+        self.dc = Namespace('http://purl.org/dc/elements/1.1/')
+        self.travel = Namespace('http://3cixty.com/ontology#')
+        self.qb = Namespace('http://purl.org/linked-data/cube#')
+        self.dct = Namespace('http://purl.org/dc/terms/')
+        self.sf = Namespace("http://www.opengis.net/ont/sf#")
+
+    def bindingPrefixes(self):
+        for key in prefixes:
+            self.bind(key, prefixes[key])
+        return self
+
+    def createRDF(self):
+        print(self.graph.serialize(format='turtle'))
+
+
+class Tube(RDF):
+    def __init__(self, x, y, station, description, wkt, stationLine, lines):
+        self.tubelines = ['Bakerloo',
+                          'Central',
+                          'Circle',
+                          'District',
+                          'Hammersmith & City',
+                          'Jubilee',
+                          'Metropolitan',
+                          'Northern',
+                          'Piccadilly',
+                          'Victoria',
+                          'Waterloo & City']
+        self.x = x
+        self.y = y
+        self.station = station
+        self.description = description
+        self.wkt = wkt
+        self.stationLine = stationLine
+        self.lines = lines
+
+    def createStation(self):
+        stationName = URIRef('http://data.linkedevents.org/transit/London/subwayStop/' + Literal(self.station).replace(" ", ""))
+        return stationName
+
+    def createStationGeom(self):
+        stationGeom = URIRef(self.createStation() + '/geometry')
+        return stationGeom
+
+    def createSubwayRoute(self):
+        tubes = []
+        for i in self.tubelines:
+            tubeline = URIRef('http://data.linkedevents.org/transit/London/subwayRoute/' + Literal(i).replace(" ", ""))
+            tubes.append(tubeline)
+        return tubes
+
+    def createLines(self):
+        for i in self.tubelines:
+            singleLine = URIRef('http://data.linkedevents.org/transit/London/subwayRoute/' + Literal(i).replace(" ", ""))
+            return singleLine
+
+    def createTubeGraph(self):
+        self.tubes = self.createSubwayRoute()
+        self.g.add((self.createStation(), self.rdf.type, self.transit.Station))
+        self.g.add((self.createStation(), self.rdf.type, self.dul.Place))
+        self.g.add((self.createStation(), self.rdfs.label, Literal(self.station)))
+        self.g.add((self.createStation(), self.dct.description, Literal(self.description)))
+        self.g.add((self.createStation(), self.geo.location, self.createStationGeom()))
+        self.g.add((self.createStation(), self.locationOnt.businessType, URIRef('http://data.linkedevents.org/kos/3cixty/subway')))
+        self.g.add((self.createStation(), self.dc.publisher, URIRef('https://tfl.gov.uk')))
+        self.g.add((self.createStationGeom(), self.rdf.type, self.geo.Point))
+        self.g.add((self.createStationGeom(), self.geo.lat, Literal(self.y, datatype=self.xsd.double)))
+        self.g.add((self.createStationGeom(), self.geo.long, Literal(self.x, datatype=self.xsd.double)))
+        self.g.add((self.createStationGeom(), self.locn.geometry, Literal(self.wkt, datatype=self.geosparql.wktLiteral)))
+
+        for i in self.tubes:
+            self.g.add(((i.createLines()), self.rdf.type, self.transit.SubwayRoute))
+        return self
+
+    def addStationLine(self):
+        for i in self.lines[1:]:
+            self.g.add((self.createStation(), self.transit.route, i.createLines()))
+        return self
+
+class TimeBetween(Tube):
+    def __init__(self, id, origin, time, destination):
+        self.id = id
+        self.origin = origin
+        self.time = time
+        self.destination = destination
+
+    def createTimeBetween(self):
+        timeBetween = URIRef('http://data.linkedevents.org/travel/London/timeBetween#' + Literal(self.id))
+        return timeBetween
+
+    def createTimeGraph(self):
+        self.g.add((self.createTimeBetween(), self.rdf.type. self.qb.Observation))
+        self.g.add((self.createTimeBetween(), self.travel.origin, self.createStation()))
+        self.g.add((self.createTimeBetween(), self.travel.destination, self.createStation()))
+        self.g.add((self.createTimeBetween(), self.travel.travelTime, Literal(self.time, datatype=self.xsd.int)))
+        return self
+
+class Bus(RDF):
+    def __init__(self, stopId, stopGUID, x, y, label, wkt, addressLocality, adminUnit, publisher, businessType):
+        self.stopId = stopId
+        self.stopGUID = stopGUID
+        self.x = x
+        self.y = y
+        self.label = label
+        self.wkt = wkt
+        self.addressLocality = addressLocality
+        self.adminUnit = adminUnit
+        self.publisher = publisher
+        self.businessType = businessType
+
+    def createBusStop(self):
+        busStop = URIRef("http://data.linkedevents.org/transit/London/stop/" + self.stopId)
+        return busStop
+
+    def createGeometry(self):
+        busStopGeom = URIRef('http://data.linkedevents.org/location/' + Literal(self.stopGUID) + '/geometry')
+        return busStopGeom
+
+    def createAddress(self):
+        stopAddress = URIRef('http://data.linkedevents.org/location/' + Literal(self.stopGUID) + '/address')
+        return stopAddress
+
+    def createLabel(self):
+        title = Literal(str(self.label).title())
+        return title
+
+
+    def createBusGraph(self):
+        self.g.add((self.createBusStop(), self.rdf.type, self.naptan.BusStop))
+        self.g.add((self.createBusStop(), self.rdf.type, self.dul.Place))
+        self.g.add((self.createBusStop(), self.rdf.type, self.transit.Stop))
+        self.g.add((self.createBusStop(), self.dc.identifier, self.stopId))
+        self.g.add((self.createBusStop(), self.geom.geometry, self.createGeometry()))
+
+        self.g.add((self.createAddress(), self.rdf.type, self.schema.PostalAddress))
+        self.g.add((self.createAddress(), self.rdf.type, self.dcterms.Location))
+        self.g.add((self.createAddress(), self.dcterms.title, Literal(self.label)))
+        self.g.add((self.createAddress(), self.schema.streetAddress, Literal(self.label)))
+        self.g.add((self.createAddress(), self.locn.address, Literal(self.label)))
+        self.g.add((self.createAddress(), self.schema.addressLocality, Literal(self.addressLocality)))
+        self.g.add((self.createAddress(), self.locn.adminUnit12, Literal(self.adminUnit)))
+
+        self.g.add((self.createGeometry(), self.rdf.type, self.geo.Point))
+        self.g.add((self.createGeometry(), self.geo.lat, Literal(self.y, datatype=self.xsd.double)))
+        self.g.add((self.createGeometry(), self.geo.long, Literal(self.x, datatype=self.xsd.double)))
+        self.g.add((self.createGeometry(), self.locn.geometry, Literal(self.wkt, datatype=self.geosparql.wktLiteral)))
+
+        self.g.add((self.createBusStop(), self.geo.location, self.createGeometry()))
+        #self.g.add((self.createBusStop(), self.transit.route, Literal(self.route))) #this might be unnecessary. They generate redundant predicates - test for these
+        self.g.add((self.createBusStop(), self.schema.location, self.createAddress()))
+        self.g.add((self.createBusStop(), self.locn.address, self.createAddress()))
+        self.g.add((self.createBusStop(), self.dc.publisher, Literal(self.publisher)))
+        self.g.add((self.createBusStop(), self.locationOnt.businessType, Literal(self.businessType)))
+        self.g.add((self.createBusStop(), self.rdfs.label, self.createLabel())
+        return self
+
+class Busline(Bus):
+    def __init__(self, route, run, wkt, label):
+        self.route = route
+        self.run = run
+        self.wkt = wkt
+        self.label = label
+
+    def createBusline(self):
+        busline = URIRef('http://data.linkedevents.org/transit/London/busLine/' + Literal(self.route))
+        return busline
+
+    def createBuslineGeom(self):
+        buslineGeom = URIRef(self.createBusline() + '/geometry')
+        return buslineGeom
+
+    def createRoute(self):
+        busRoute = URIRef('http://data.linkedevents.org/transit/London/route/' + Literal(self.route))
+        return busRoute
+
+    def createRouteService(self):
+        routeService = URIRef('http://data.linkedevents.org/transit/London/service/' + Literal(self.route) + '_' + Literal(self.run))
+        return routeService
+
+    def createBuslineGraph(self):
+        self.g.add((self.createBusline(), self.rdf.type, self.transit.BusRoute))
+        self.g.add((self.createBusline(), self.geo.location, self.createBuslineGeom()))
+        self.g.add((self.createBusline(), self.rdfs.label, self.createLabel()))
+        self.g.add((self.createBusline(), self.transit.RouteService, self.createRouteService()))
+        self.g.add((self.createBusline(), self.transit.route, self.createRoute()))
+        self.g.add((self.createBuslineGeom(), self.rdf.type, self.sf.LineString))
+        self.g.add((self.createBuslineGeom(), self.locn.geometry, Literal(self.wkt)))
+        return self
+
+class BusCorrespondence(Busline):
+    def __init__(self, stopId, route, run, sequence):
+        self.stopId = stopId
+        self.route = route
+        self.run = run
+        self.sequence = sequence
+
+    def createServiceStop(self):
+        serviceStopId = URIRef('http://data.linkedevents.org/transit/London/serviceStop/' + Literal(self.service) + '/' + Literal(self.stopId))
+        return serviceStopId
+
+    def createService(self):
+        service = URIRef('http://data.linkedevents.org/transit/London/service/' + Literal(self.service))
+        return service
+
+    def createBusCorrespondence(self):
+        self.g.add((self.createServiceStop(), self.rdf.type, self.transit.ServiceStop))
+        self.g.add((self.createServiceStop(), self.transit.service, self.createService()))
+        self.g.add((self.createServiceStop(), self.transit.sequence, Literal(self.sequence, datatype=self.xsd.int)))
+        self.g.add((self.createServiceStop(), self.transit.stop, self.createBusStop()))
+        return self
+
+class Area(RDF):
+    def __init__(self, name, code, geom):
+        self.name = name
+        self.code = code
+        self.geom = geom
+
+    def createArea(self):
+        area = URIRef('http://data.linkedevents.org/transit/London/area/' + Literal(self.code))
+        return area
+
+    def createAreaGeom(self):
+        areaGeom = URIRef(self.createArea() + '/geometry')
+        return areaGeom
+
+
+    def createAreaGraph(self):
+        self.g.add((self.createArea(), self.rdf.type, self.schema.AdministrativeArea))
+        self.g.add((self.createArea(), self.rdfs.label, Literal(str(self.name).title()))
+        self.g.add((self.createArea(), self.dct.identifier, Literal(self.code)))
+        self.g.add((self.createArea(), self.geo.location, self.createAreaGeom()))
+        self.g.add((self.createAreaGeom(), self.locn.geometry, Literal(self.geom)))
+        return self
+
