@@ -1,3 +1,5 @@
+__author__ = 'agata'
+
 #libraries
 import rdflib
 from rdflib import URIRef, Literal, Namespace, plugin, Graph, ConjunctiveGraph
@@ -77,8 +79,8 @@ class Tube(RDF):
                           'Waterloo & City']
         self.x = x
         self.y = y
-        self.station = station
-        self.description = description
+        self.station = str(station).strip()
+        self.description = str(description).strip()
         self.wkt = wkt
         self.businessType = businessType
         self.publisher = publisher
@@ -127,9 +129,9 @@ class TimeBetween(Tube):
     def __init__(self, id, origin, time, destination):
         RDF.__init__(self)
         self.id = id
-        self.origin = origin
+        self.origin = str(origin).strip()
         self.time = time
-        self.destination = destination
+        self.destination = str(destination).strip()
 
     def createTimeBetween(self):
         timeBetween = URIRef('http://data.linkedevents.org/travel/London/timeBetween#' + Literal(self.id))
@@ -212,7 +214,7 @@ class Busline(Bus):
         self.route = route
         self.run = run
         self.wkt = wkt
-        self.label = label
+        self.label = str(label).title()
 
     def createBusline(self):
         busline = URIRef('http://data.linkedevents.org/transit/London/busLine/' + Literal(self.route))
@@ -269,8 +271,8 @@ class BusCorrespondence(Busline):
 class Area(RDF):
     def __init__(self, name, code, geom):
         RDF.__init__(self)
-        self.name = name
-        self.code = code
+        self.name = str(name).strip()
+        self.code = str(code).strip()
         self.geom = geom
 
     def createArea(self):
@@ -308,7 +310,7 @@ tube = Tube(10000, 5000, 'Great station', 'a very long description', 'just some 
             'http://data.linkedevents.org/kos/3cixty/subway',
             'https://tfl.gov.uk',
             ['Great station', 'Central', 'Metropolitan', 'Piccadilly'])
-#print(tube.createTubeGraph().serialize(format='turtle'))
+print(tube.createTubeGraph().serialize(format='turtle'))
 
 #time between test
 newTime = TimeBetween(101, 'South Kensington',1 ,'Sloane Square')
@@ -320,4 +322,4 @@ busCorr = BusCorrespondence('100705', '19', 1, 25)
 
 #area test
 area = Area('Wandsworth', 'E000XXXX', 'MULTIPOLYGON[plenty of coordinates here]')
-print(area.createAreaGraph().serialize(format='turtle'))
+#print(area.createAreaGraph().serialize(format='turtle'))
