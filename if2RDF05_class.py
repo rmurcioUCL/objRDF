@@ -30,7 +30,6 @@ prefixes = {'schema':'http://schema.org/',
             'dc': 'http://purl.org/dc/elements/1.1/',
             'trans': 'http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#'}
 
-
 class RDF:
     def __init__(self):
         self.schema = Namespace("http://schema.org/")
@@ -70,7 +69,6 @@ class Train(RDF):
 
         self.store = plugin.get('IOMemory', Store)()
         self.g = Graph(self.store)
-
 
     def bindingPrefixes(self): #+TICKED
         for key in prefixes:
