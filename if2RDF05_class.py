@@ -1,7 +1,11 @@
 # coding=utf-8
 __author__ = 'patrick'
+__author__ = 'Wick 1'
 __author__ = 'casa'
-
+# -*- coding: utf-8 -*-
+#libraries
+#import tkinter as tk
+#from tkinter import filedialog
 import csv
 import uuid
 import pyproj
@@ -9,7 +13,10 @@ from rdflib import URIRef, Literal, Namespace, plugin, Graph, ConjunctiveGraph
 from rdflib.store import Store
 
 #Vocabularies   -- THIS SHOULD BE A CONSTRUCTED BASED ON THE A DICTONARY DEFINITION
-prefixes = {'schema':'http://schema.org/',
+class Utils:
+    def __init__(self, g):
+        self.g = g
+        self.prefixes = {'schema':'http://schema.org/',
             'naptan':'http://transport.data.gov.uk/def/naptan/',
             'owl':'http://www.w3.org/2002/07/owl#',
             'xsd': 'http://www.w3.org/2001/XMLSchema#',
@@ -29,6 +36,11 @@ prefixes = {'schema':'http://schema.org/',
             'foaf': 'http://xmlns.com/foaf/0.1/',
             'dc': 'http://purl.org/dc/elements/1.1/',
             'trans': 'http://vocab.linkeddata.es/datosabiertos/def/urbanismo-infraestructuras/Transporte#'}
+
+    def bindingPrefixes(self):
+        for key in self.prefixes:
+            self.g.bind(key, self.prefixes[key])
+        return self.g
 
 class RDF:
     def __init__(self):
@@ -50,6 +62,7 @@ class RDF:
         self.g = Graph(self.store)
         self.graph = ConjunctiveGraph(self.store)
 
+
 class Train(RDF):
     def __init__(self, stationId, stationLat, stationLong, stationGeometry, route, title,
                  trainId, trainWkt, stationGUID):
@@ -70,6 +83,7 @@ class Train(RDF):
         self.store = plugin.get('IOMemory', Store)()
         self.g = Graph(self.store)
 
+
     def bindingPrefixes(self): #+TICKED
         for key in prefixes:
             self.g.bind(key, prefixes[key])
@@ -80,7 +94,7 @@ class Train(RDF):
         return singleStation
 
     def createTransitRoute(self):
-        transitRoute = URIRef("http://data.linkedevents.org/transit/London/railwayRoute/%s") % self.route#
+        transitRoute = URIRef("http://data.linkedevents.org/transit/London/railwayRoute/%s") % self.route#.replace(" ", "-").lower()
         return transitRoute
 
     def createLine(self):
@@ -92,24 +106,25 @@ class Train(RDF):
         return trainRoute
 
     def createTrainGraph(self):
-        singleStation = self.createTrainStation()
+        singleStation = self.createTrainStation() #"http://data.linkedevents.org/transit/London/station/" + Literal(stationTitle)
         transitRoute =  self.createTransitRoute()
         singleGeometry= URIRef("http://data.linkedevents.org/location/" + "%s" + "/geometry") % Literal(self.title)
         singleLine=self.createLine()
-        
+        #singleGeometry = createGeometry(arg[5]) #"http://data.linkedevents.org/location/" + Literal(stationId) + "/geometry"
+
         self.g.add((singleStation, self.rdf.type, self.naptan.RailwayStation))
         self.g.add((singleStation, self.rdf.type, self.dul.Place))
         self.g.add((singleStation, self.rdf.type, self.transit.Stop))
         self.g.add((singleStation, self.dc.identifier, Literal(self.stationId)))
-        self.g.add((singleStation, self.rdfs.label, Literal(self.title))) 
+        self.g.add((singleStation, self.rdfs.label, Literal(self.title))) #g.add((singleStation, rdfs.label, arg[3]))
 
         self.g.add((singleGeometry, self.rdf.type, self.geo.Point))
         self.g.add((singleGeometry, self.geo.lat, Literal(self.stationLat, datatype=self.xsd.double)))
         self.g.add((singleGeometry, self.geo.long, Literal(self.stationLong, datatype=self.xsd.double)))
         self.g.add((singleGeometry, self.locn.geometry, Literal(self.stationGeometry, datatype=self.geosparql.wktLiteral)))
         self.g.add((singleStation, self.transit.route, transitRoute))
-        self.g.add((singleStation, self.schema.name, Literal(self.route)))
-        self.g.add((singleStation, self.geo.location, Literal(singleGeometry)))
+        self.g.add((singleStation, self.schema.name, Literal(self.route)))#NEW
+        self.g.add((singleStation, self.geo.location, Literal(singleGeometry)))#g.add((singleStation, schema.location, singleAddress))
         self.g.add((singleStation, self.dc.publisher, Literal(self.stationPublisher)))
         self.g.add((singleStation, self.locationOnt.businessType, Literal(self.stationBusinessType)))
 
@@ -119,13 +134,15 @@ class Train(RDF):
 
         return self.g
 
+def main(myGraph):
+    content=myGraph
+    utils=Utils(content)
+    utils.bindingPrefixes()
+    print(content.serialize(format='turtle'))
+
+#dummy values for to initialise test
 ts_init = Train('0000','-0.0001','0.0001','X','route0' ,'stationA' , '0', 'POINT(-0.001 0.001)', '0000X')
-
-
-
-
-
-
+main(ts_init.createTrainGraph())
 
 
 
