@@ -82,7 +82,7 @@ class Train(RDF):
         return singleStation
 
     def createTransitRoute(self):
-        transitRoute = URIRef("http://data.linkedevents.org/transit/London/railwayRoute/%s") % self.route#.replace(" ", "-").lower()
+        transitRoute = URIRef("http://data.linkedevents.org/transit/London/railwayRoute/%s") % self.route#
         return transitRoute
 
     def createLine(self):
@@ -94,25 +94,24 @@ class Train(RDF):
         return trainRoute
 
     def createTrainGraph(self):
-        singleStation = self.createTrainStation() #"http://data.linkedevents.org/transit/London/station/" + Literal(stationTitle)
+        singleStation = self.createTrainStation()
         transitRoute =  self.createTransitRoute()
         singleGeometry= URIRef("http://data.linkedevents.org/location/" + "%s" + "/geometry") % Literal(self.title)
         singleLine=self.createLine()
-        #singleGeometry = createGeometry(arg[5]) #"http://data.linkedevents.org/location/" + Literal(stationId) + "/geometry"
-
+        
         self.g.add((singleStation, self.rdf.type, self.naptan.RailwayStation))
         self.g.add((singleStation, self.rdf.type, self.dul.Place))
         self.g.add((singleStation, self.rdf.type, self.transit.Stop))
         self.g.add((singleStation, self.dc.identifier, Literal(self.stationId)))
-        self.g.add((singleStation, self.rdfs.label, Literal(self.title))) #g.add((singleStation, rdfs.label, arg[3]))
+        self.g.add((singleStation, self.rdfs.label, Literal(self.title))) 
 
         self.g.add((singleGeometry, self.rdf.type, self.geo.Point))
         self.g.add((singleGeometry, self.geo.lat, Literal(self.stationLat, datatype=self.xsd.double)))
         self.g.add((singleGeometry, self.geo.long, Literal(self.stationLong, datatype=self.xsd.double)))
         self.g.add((singleGeometry, self.locn.geometry, Literal(self.stationGeometry, datatype=self.geosparql.wktLiteral)))
         self.g.add((singleStation, self.transit.route, transitRoute))
-        self.g.add((singleStation, self.schema.name, Literal(self.route)))#NEW
-        self.g.add((singleStation, self.geo.location, Literal(singleGeometry)))#g.add((singleStation, schema.location, singleAddress))
+        self.g.add((singleStation, self.schema.name, Literal(self.route)))
+        self.g.add((singleStation, self.geo.location, Literal(singleGeometry)))
         self.g.add((singleStation, self.dc.publisher, Literal(self.stationPublisher)))
         self.g.add((singleStation, self.locationOnt.businessType, Literal(self.stationBusinessType)))
 
