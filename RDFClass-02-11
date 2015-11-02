@@ -94,7 +94,7 @@ class Tube(RDF):
             g.add((self.createStation(), self.transit.route, singleLine))
         return g
 
-    def createTubeGraph(self, g): #in case of error delete non-self g
+    def createTubeGraph(self, g):
         name = self.createStation()
         geom = self.createStationGeom()
 
@@ -344,8 +344,8 @@ area = Area('Wandsworth', 'E000XXXX', 'MULTIPOLYGON[plenty of coordinates here]'
 
 
 
-#--------------------------------------------- Load data to an array -------------------------------------------
-def createTubeRDF(): #complete this code so that it generates one decent graph
+#--------------------------------------------- Load tube data to an array-----------------------------------------------
+def createTubeRDF():
     Tubes = []
     g = Graph()
     line = Line()
@@ -357,14 +357,12 @@ def createTubeRDF(): #complete this code so that it generates one decent graph
     for i in Tubes:
         i.createTubeGraph(g)
     return g
-
-#---------------------------------------------- Serialize the graph ------------------------------------------------
+#------------------------------------------ Bind & serialize the final graph -------------------------------------------
 def main(content):
     tree = Tree(content)
     tree.bindingPrefixes(content)
     content.serialize(destination='/Users/Agata/Desktop/tube_02-11.ttl', format='turtle')
     print('The file in place.')
     #print(content.serialize(format='turtle'))
-
-#--------------------- Final
+#------------------------------------------------------ Final ----------------------------------------------------------
 main(createTubeRDF())
