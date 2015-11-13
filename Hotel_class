@@ -3,7 +3,7 @@ from rdflib import URIRef, Literal, Namespace, Graph, BNode
 import uuid
 import csv
 from rdflib import XSD
-#rdflib.term.Literal.__init__.NORMALIZE_LITERALS = True
+
 class Tree:
     def __init__(self, g):
         self.g = g
@@ -104,10 +104,9 @@ class Hotel(RDF):
         g.add((self.res, self.schema.name, Literal("Hotel")))
         g.add((self.res, self.dc.publisher, self.publisher))
         g.add((self.res, self.geo.location, self.geom))
-        #g.qname(self.res)
         g.add((self.geom, self.rdf.type, self.geo.Point))
         g.add((self.geom, self.geo.lat, Literal(self.x, datatype=XSD.double)))
-        g.add((self.geom, self.geo.long, Literal(self.y, datatype=self.xsd.double)))
+        g.add((self.geom, self.geo.long, Literal(self.y, datatype=XSD.double)))
         g.add((self.geom, self.locn.geometry, Literal(self.wkt, datatype=self.geo.wktLiteral)))
         g.add((self.addr, self.rdf.type, self.acco.Hotel))
         g.add((self.addr, self.dcterms.Title, Literal(self.name)))
