@@ -1,4 +1,4 @@
-from rdflib import URIRef, Literal, Namespace, Graph, BNode
+from rdflib import URIRef, Literal, Namespace, Graph
 import uuid
 import csv
 from rdflib import XSD
