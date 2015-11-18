@@ -3,7 +3,6 @@ import uuid
 import csv
 from rdflib import XSD
 import random
-from random import seed
 import string
 
 class Tree:
@@ -120,7 +119,6 @@ class Hotel(RDF):
         g.add((self.res, self.schema.name, Literal("Hotel")))
         g.add((self.res, self.dc.publisher, self.publisher))
         g.add((self.res, self.geo.location, self.geom))
-        #g.qname(self.res)
         g.add((self.geom, self.rdf.type, self.geo.Point))
         g.add((self.geom, self.geo.lat, Literal(self.x, datatype=XSD.double)))
         g.add((self.geom, self.geo.long, Literal(self.y, datatype=XSD.double)))
