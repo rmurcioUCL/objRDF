@@ -1,0 +1,274 @@
+from rdflib import URIRef, Namespace, Graph
+from rdflib import Literal
+import uuid
+import csv
+from rdflib import XSD
+import random
+import string
+
+class Tree:
+    def __init__(self, g):
+        self.g = g
+        self.prefixes = {'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
+            'foaf': 'http://xmlns.com/foaf/0.1/',
+            'geom': 'http://geovocab.org/geometry#',
+            'transit': 'http://vocab.org/transit/terms/',
+            'locn': 'http://www.w3.org/ns/locn#',
+            'vcard': 'http://www.w3.org/2006/vcard/ns#',
+            'dcterms': 'http://purl.org/dc/terms/',
+            'schema': 'http://schema.org/',
+            'geosparql': 'http://www.opengis.net/ont/geosparql#',
+            'unknown': 'http://data.linkedevents.org/def/unknown#',
+            'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+            'dul': 'http://ontologydesignpatterns.org/ont/dul/DUL.owl#',
+            'naptan': 'http://transport.data.gov.uk/def/naptan/',
+            #'xsd': 'http://www.w3.org/2001/XMLSchema#',
+            'owl': 'http://www.w3.org/2002/07/owl#',
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'locationOnt': 'http://data.linkedevents.org/def/location#',
+            'dc': 'http://purl.org/dc/elements/1.1/',
+            'travel': 'http://3cixty.com/ontology#',
+            'qb': 'http://purl.org/linked-data/cube#',
+            'dct': 'http://purl.org/dc/terms/',
+            'sf': 'http://www.opengis.net/ont/sf#',
+            'acco': 'http://purl.org/acco/ns#',
+            'gr': 'http://purl.org/goodrelations/v1#',
+            'locationRes': 'http://data.linkedevents.org/location/',
+            'rev': 'http://purl.org/stuff/rev#',
+            'sioc': 'http://rdfs.org/sioc/ns#',
+            'seegrid': 'http://def.seegrid.csiro.au/isotc211/iso19115/2003/code/MaintenanceFrequency/'
+            }
+
+    def namespaces(self):
+        for prefix, namespace in self.namespace_manager.namespaces():
+            yield prefix, namespace
+
+    def bindingPrefixes(self, g):
+        for key in self.prefixes:
+            self.g.bind(key, URIRef(self.prefixes[key]))
+        return self.g
+
+class RDF:
+    def __init__(self):
+        self.geo = Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+        self.foaf = Namespace("http://xmlns.com/foaf/0.1/")
+        self.geom = Namespace("http://geovocab.org/geometry#")
+        self.unknown = Namespace("http://data.linkedevents.org/def/unknown#")
+        self.transit = Namespace("http://vocab.org/transit/terms/")
+        self.locn = Namespace("http://www.w3.org/ns/locn#")
+        self.vcard = Namespace('http://www.w3.org/2006/vcard/ns#')
+        self.dcterms = Namespace("http://purl.org/dc/terms/")
+        self.schema = Namespace('http://schema.org/')
+        self.geosparql = Namespace("http://www.opengis.net/ont/geosparql#")
+        self.rdfs = Namespace('http://www.w3.org/2000/01/rdf-schema#')
+        self.naptan = Namespace('http://transport.data.gov.uk/def/naptan/')
+        #self.xsd = Namespace('http://www.w3.org/2001/XMLSchema#')
+        self.owl = Namespace('http://www.w3.org/2002/07/owl#')
+        self.rdf = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        self.locationOnt = Namespace("http://data.linkedevents.org/def/location#")
+        self.dul = Namespace('http://ontologydesignpatterns.org/ont/dul/DUL.owl#')
+        self.dc = Namespace('http://purl.org/dc/elements/1.1/')
+        self.travel = Namespace('http://3cixty.com/ontology#')
+        self.qb = Namespace('http://purl.org/linked-data/cube#')
+        self.dct = Namespace('http://purl.org/dc/terms/')
+        self.sf = Namespace("http://www.opengis.net/ont/sf#")
+        self.locationRes = Namespace('http://data.linkedevents.org/location/')
+        self.acco = Namespace("http://purl.org/acco/ns#")
+        self.gr = Namespace('http://purl.org/goodrelations/v1#')
+        self.rev = Namespace('http://purl.org/stuff/rev#')
+        self.sioc = Namespace('http://rdfs.org/sioc/ns#')
+        self.seegrid = Namespace('http://def.seegrid.csiro.au/isotc211/iso19115/2003/code/MaintenanceFrequency/')
+
+    def getUid(self, r0, ns):
+        placeUri = ns
+        idencode = r0.encode('utf-8')
+        uid = uuid.uuid5(placeUri, idencode)
+        return uid
+
+    def createLocationResId(self, objectId):#USE THIS SCRIPT TO GENERATE QNAME COMPLIANT UUID
+        placeUri = Namespace("http://data.linkedevents.org/places/London/hotels")
+        idencode = objectId.encode('utf-8')
+        uid = uuid.uuid5(placeUri, idencode)
+        puid = URIRef("http://data.linkedevents.org/location/" + Literal(uid))
+        uuidList = list(puid)
+        chars = string.ascii_letters
+        pwdSize = 1
+        random.seed(101) #set seed so the random number generated is replicable in the next iteration
+        newId = ''.join((random.choice(chars)) for x in range(pwdSize))
+        uuidList[38] = newId
+        locationResID = ''.join(uuidList).lower()
+        return locationResID
+
+class Place(RDF):
+    def __init__(self):
+        RDF.__init__(self)
+
+    def createLocationResId(self, objectId):
+        placeUri = Namespace("http://data.linkedevents.org/places/London/hotels")
+        idencode = objectId.encode('utf-8')
+        uid = uuid.uuid5(placeUri, idencode)
+        puid = URIRef("http://data.linkedevents.org/location/" + Literal(uid))
+        uuidList = list(puid)
+        chars = string.ascii_letters
+        pwdSize = 1
+        random.seed(101)
+        newId = ''.join((random.choice(chars)) for x in range(pwdSize))
+        uuidList[38] = newId
+        locationResID = ''.join(uuidList).lower()
+        return locationResID
+
+    def createNtGraph(self, g):
+        g.add((self.res, self.rdf.type, self.dul.Place))
+        return g
+
+class Hotel(Place):
+    def __init__(self, id, name, x, y, wkt, postcode, address, website, description):
+        Place.__init__(self)
+        self.id = self.createLocationResId(id)
+        self.name = name
+        self.x = x
+        self.y = y
+        self.wkt = wkt
+        self.postcode = postcode
+        self.address = address
+        self.website = website
+        self.description = description
+
+        self.res = URIRef(self.id)
+        self.geom = URIRef(str(self.res) + '/geometry')
+        self.addr = URIRef(str(self.res) + '/address')
+
+        self.publisher = URIRef('http://www.openstreetmap.org/planet.osm')
+        self.businessType = URIRef('http://data.linkedevents.org/kos/3cixty/hotel')
+
+    def createGraph(self, g):
+        g.add((self.res, self.rdf.type, self.locationOnt.Hotel))
+        g.add((self.res, self.rdf.type, self.acco.Hotel))
+        g.add((self.res, self.locationOnt.businessType, Literal("Hotel")))
+        g.add((self.res, self.schema.name, Literal("Hotel")))
+        g.add((self.res, self.dc.publisher, self.publisher))
+        g.add((self.res, self.geo.location, self.geom))
+        g.add((self.geom, self.rdf.type, self.geo.Point))
+        g.add((self.geom, self.geo.lat, Literal(self.x, datatype=XSD.double)))
+        g.add((self.geom, self.geo.long, Literal(self.y, datatype=XSD.double)))
+        g.add((self.geom, self.locn.geometry, Literal(self.wkt, datatype=self.geo.wktLiteral)))
+        g.add((self.addr, self.rdf.type, self.acco.Hotel))
+        g.add((self.addr, self.dcterms.Title, Literal(self.name)))
+        g.add((self.addr, self.schema.address, Literal(self.address)))
+        g.add((self.addr, self.schema.postalAddress, Literal(self.postcode)))
+        #g.add((self.addr, self.gr.description, Literal(self.description)))
+        g.add((self.addr, self.foaf.page, Literal(self.website)))
+        g.add((self.addr, self.geo.location, self.geom))
+        return g
+
+class Airbnb(Place):
+    def __init__(self, id, name, host_id, host_name, neighbourhood, x, y, wkt, room_type, price, minimum_nights,
+                 number_of_reviews, last_review, reviews_per_month, calculated_host_listings_count, availability_365):
+        Place.__init__(self)
+        self.id = self.createLocationResId(id)
+        self.name = name
+        self.host_id = host_id
+        self.host_name = host_name
+        self.neighbourhood = neighbourhood
+        self.x = x
+        self.y = y
+        self.wkt = wkt
+        self.room_type = room_type
+        self.price = price
+        self.minimum_nights = minimum_nights
+        self.number_of_reviews = number_of_reviews
+        self.last_review = last_review
+        self.reviews_per_month = reviews_per_month
+        self.calculated_host_listings_count = calculated_host_listings_count
+        self.availability_365 = availability_365
+
+        self.res = URIRef(self.id)
+        self.geom = URIRef(str(self.res) + '/geometry')
+        self.addr = URIRef(str(self.res) + '/address')
+
+        self.publisher = URIRef('http://www.airbnb.com')
+        self.businessType = URIRef('http://data.linkedevents.org/kos/3cixty/hotel')
+
+    def createGraph(self, g):
+        g.add((self.res, self.rdf.type, self.locationOnt.Accommodation))
+        g.add((self.res, self.rdf.type, self.gr.Offering))
+        g.add((self.res, self.sioc.has_host, Literal(self.host_name)))
+        #g.add((self.res, self.sioc.id, Literal(self.host_id)))
+        g.add((self.res, self.sioc.last_reply_date, Literal(self.last_review, datatype=XSD.date)))
+        g.add((self.res, self.gr.description, Literal(self.name)))
+        g.add((self.res, self.gr.hasCurrencyValue, Literal(self.price, datatype=XSD.GBP)))
+        g.add((self.res, self.gr.hasUnitOfMeasurement, Literal(self.minimum_nights, datatype=XSD.minimumNights)))
+        g.add((self.res, self.sioc.num_replies, Literal(self.number_of_reviews, datatype=XSD.reviews)))
+        g.add((self.res, self.seegrid.monthly, Literal(self.reviews_per_month, datatype=XSD.reviewsMonthly)))
+        g.add((self.res, self.sioc.host_of, Literal(self.calculated_host_listings_count, datatype=XSD.listings)))
+        g.add((self.res, self.seegrid.annually, Literal(self.availability_365, datatype=XSD.days)))
+        g.add((self.res, self.rdf.type, self.acco.Accommodation))
+        g.add((self.res, self.locationOnt.businessType, Literal(self.room_type)))
+        g.add((self.res, self.schema.name, Literal("Accommodation")))
+        g.add((self.res, self.dc.publisher, self.publisher))
+        g.add((self.res, self.geo.location, self.geom))
+        g.add((self.geom, self.rdf.type, self.geo.Point))
+        g.add((self.geom, self.geo.lat, Literal(self.x, datatype=XSD.double)))
+        g.add((self.geom, self.geo.long, Literal(self.y, datatype=XSD.double)))
+        g.add((self.geom, self.locn.geometry, Literal(self.wkt, datatype=self.geo.wktLiteral)))
+        g.add((self.addr, self.rdf.type, self.acco.Hotel))
+        g.add((self.addr, self.dcterms.addressLocality, Literal(self.neighbourhood)))
+        g.add((self.addr, self.geo.location, self.geom))
+        return g
+
+class RDFCreator:
+    def __init__(self):
+        self.data = []
+        self.g = Graph()
+        tree = Tree(self.g)
+        tree.bindingPrefixes(self.g)
+
+    def createHotelObj(self, path):
+        with open(path, 'rU') as f:
+            f.next()
+            for line in csv.reader(f, dialect='excel'):
+                self.data.append(Hotel(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8]))
+            return self.data
+
+    def createAirbnbObj(self, path):
+        with open(path, 'rU') as f:
+            f.next()
+            for line in csv.reader(f, dialect='excel'):
+                self.data.append(Airbnb(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9], line[10], line[11], line[12], line[13], line[14], line[15]))
+            return self.data
+
+    def createNt(self):
+        for i in self.data:
+            i.createNtGraph(self.g)
+        return self.g
+
+    def createRDF(self):
+        for i in self.data:
+            i.createGraph(self.g)
+        return self.g
+
+#----------------------------------------------- Create hotel files ----------------------------------------------------
+def mainHotel(source, ntpath, ttlpath):
+    rdf = RDFCreator()
+    rdf.createHotelObj(source)
+    rdf.createNt().serialize(format='nt', destination=ntpath)
+    rdf.createRDF().serialize(format='turtle', destination=ttlpath)
+    print('The files in place.')
+
+source = '/Users/Agata/Desktop/London/Hotels/hotel_data_sample.csv'
+ntpath = '/Users/Agata/Desktop/test_hotel_nt.ttl'
+ttlpath = '/Users/Agata/Desktop/test_hotel.ttl'
+#mainHotel(source, ntpath, ttlpath) #uncomment to run
+
+#---------------------------------------------- Create Airbnb files ----------------------------------------------------
+def mainAirbnb(source, ntpath, ttlpath):
+    rdf = RDFCreator()
+    rdf.createAirbnbObj(source)
+    rdf.createNt().serialize(format='nt', destination=ntpath)
+    rdf.createRDF().serialize(format='turtle', destination=ttlpath)
+    print('The files in place.')
+
+source = '/Users/Agata/Desktop/airbnb_smpl.csv'
+ntpath = '/Users/Agata/Desktop/airbnb_nt_test.ttl'
+ttlpath = '/Users/Agata/Desktop/airbnb_test.ttl'
+mainAirbnb(source, ntpath, ttlpath) #uncomment to run
