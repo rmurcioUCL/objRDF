@@ -72,13 +72,13 @@ class RDF:
         self.acco = Namespace("http://purl.org/acco/ns#")
         self.gr = Namespace('http://purl.org/goodrelations/v1#')
 
-    def getUid(self, r0, ns):
-        placeUri = ns
+    def getUid(self, r0):#USE THIS SCRIPT TO GENERATE NON COMPLIANT QNAME UUID- MUST BE USED IN TANDEM WITH POST PRODUCTION VALIDATION SCRIPT [KOSHER]
+        placeUri = Namespace("http://data.linkedevents.org/places/London/hotels")
         idencode = r0.encode('utf-8')
         uid = uuid.uuid5(placeUri, idencode)
         return uid
 
-    def createLocationResId(self, objectId):#USE THIS SCRIPT TO GENERATE QNAME COMPLIANT UUID
+    def createLocationResId(self, objectId):#USE THIS SCRIPT TO GENERATE QNAME COMPLIANT UUID [ILLEGAL]
         placeUri = Namespace("http://data.linkedevents.org/places/London/hotels")
         idencode = objectId.encode('utf-8')
         uid = uuid.uuid5(placeUri, idencode)
@@ -95,7 +95,7 @@ class RDF:
 class Hotel(RDF):
     def __init__(self, id, name, x, y, wkt, postcode, address, website, description):
         RDF.__init__(self)
-        self.id = self.createLocationResId(id)
+        self.id = self.getUid(id)
         self.name = name
         self.x = x
         self.y = y
@@ -152,8 +152,8 @@ def main(content, path):
     tree = Tree(content)
     tree.bindingPrefixes(content)
     print(content.serialize(format='turtle'))
-    #content.serialize(destination=path, format='turtle')
-    #print('The file in place.')
+    content.serialize(destination=path, format='turtle')
+    print('The file in place.')
 
 rdf = RDFCreator()
-main(rdf.createHotelRDF('/Users/Agata/Desktop/London/Hotels/hotel_data_sample.csv'), '/Users/Agata/Desktop/test.ttl')
+main(rdf.createHotelRDF('/Users/patrick/3cixty/IN/RM/hotel/hotel_data.csv'), '/Users/patrick/3cixty/IN/RM/hotel/hotel_dataQuad.ttl')
